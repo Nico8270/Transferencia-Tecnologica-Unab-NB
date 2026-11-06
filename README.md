@@ -1,1 +1,1 @@
-mvp vibecodeado, revisar
+*mvp vibecodeado, revisar
