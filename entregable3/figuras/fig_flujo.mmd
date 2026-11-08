@@ -1,0 +1,26 @@
+flowchart LR
+  subgraph S1["Institución"]
+    direction TB
+    A["Activa el curso<br/>(enlace LTI en aula virtual)"]
+  end
+  subgraph S2["Estudiante · semanas 1 a 4"]
+    direction TB
+    B["Abre la invitación"] --> C["Diagnóstico adaptativo<br/>12 ítems · ~10 min"]
+    C --> D["Mapa de dominio<br/>por habilidad"]
+    D --> E["Ruta personalizada<br/>módulos de 15 min"]
+    E --> F["Práctica con retroalimentación<br/>por error frecuente"]
+  end
+  subgraph S3["Docente · semana 4"]
+    direction TB
+    G["Panel con semáforo<br/>de riesgo"] --> H["Alerta antes<br/>de la Prueba 1"]
+    H --> I["Contacta o deriva<br/>(tutoría, DAE)"]
+  end
+  A --> B
+  F --> G
+  J[("Registro de eventos<br/>→ métricas A1 a I1")]
+  F -.-> J
+  I -.-> J
+  classDef s fill:#dcefe6,stroke:#1f6f54,color:#18232e;
+  classDef d fill:#fdf3cf,stroke:#b9770e,color:#18232e;
+  classDef m fill:#e6ecf3,stroke:#5b6872,color:#18232e;
+  class B,C,D,E,F s; class A,G,H,I d; class J m;

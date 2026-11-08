@@ -1,0 +1,88 @@
+{
+  "validacion": {
+    "Equipo (6 meses)": {
+      "Desarrollador/a full-stack 1,0 JC (1,4 × 6)": 8.4,
+      "Pedagogo/a de matemática 0,5 JC (0,8 × 6)": 4.8,
+      "Coordinación y producto 0,5 JC (0,6 × 6)": 3.6
+    },
+    "Tecnología": {
+      "Nube, dominio y respaldos": 0.9,
+      "API de IA (pruebas y piloto)": 0.6,
+      "Herramientas de software": 0.6
+    },
+    "Legal y cumplimiento": {
+      "Asesoría Ley 21.719 y evaluación de impacto": 3.0,
+      "Constitución SpA y contratos": 0.6
+    },
+    "Contenido": {
+      "Banco de 300 ítems TP validado por 2 expertos": 3.0
+    },
+    "Evaluación del piloto": {
+      "Evaluador/a externo/a": 2.5,
+      "Incentivos para entrevistas y encuesta": 0.5
+    },
+    "Difusión y ventas": {
+      "Eventos y reuniones con vicerrectorías": 1.5,
+      "Material de demostración": 0.5
+    }
+  },
+  "subtotal_val": 30.5,
+  "imprevistos": 1.5,
+  "total_val": 32.0,
+  "financ_val": {
+    "CORFO Semilla Inicia (75 %)": 15.0,
+    "Dos pilotos pagados (6,0 c/u)": 12.0,
+    "Aporte del equipo (25 % del proyecto CORFO)": 5.0
+  },
+  "proj": {
+    "2028": {
+      "lic": 312.0,
+      "impl": 15.0,
+      "ing": 327.0,
+      "personal": 153.60000000000002,
+      "fijos": 197.60000000000002,
+      "var": 39.0,
+      "costos": 236.60000000000002,
+      "resultado": 90.39999999999998,
+      "inst": 8,
+      "est": 13000,
+      "nuevas": 6,
+      "fte": 8,
+      "costo_fte": 1.6,
+      "otros_fijos": {
+        "Nube base": 6,
+        "Legal y DPO externo": 8,
+        "Marketing y ventas": 14,
+        "Administración y oficina": 10,
+        "Evaluación e I+D": 6
+      }
+    },
+    "2029": {
+      "lic": 528.0,
+      "impl": 15.0,
+      "ing": 543.0,
+      "personal": 244.79999999999998,
+      "fijos": 319.79999999999995,
+      "var": 66.0,
+      "costos": 385.79999999999995,
+      "resultado": 157.20000000000005,
+      "inst": 14,
+      "est": 22000,
+      "nuevas": 6,
+      "fte": 12,
+      "costo_fte": 1.7,
+      "otros_fijos": {
+        "Nube base": 10,
+        "Legal y DPO externo": 10,
+        "Marketing y ventas": 25,
+        "Administración y oficina": 18,
+        "Evaluación e I+D": 12
+      }
+    }
+  },
+  "break_even_est_2028": 9409.523809523811,
+  "costo_inst_1500": 36000000,
+  "retenidos_equivalentes": 18.0,
+  "pct_mercado_2028": 6.197115957573591,
+  "pct_mercado_2029": 10.48742700512454
+}

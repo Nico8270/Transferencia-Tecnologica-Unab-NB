@@ -1,0 +1,81 @@
+{
+  "params": {
+    "n_est_prueba": 10,
+    "n_doc_prueba": 5,
+    "p_diag_sin_ayuda": 0.8,
+    "tiempo_diag_media_min": 11.0,
+    "tiempo_diag_sd_min": 3.0,
+    "p_modulo": 0.75,
+    "p_doc_identifica": 0.85,
+    "tiempo_doc_media_min": 1.6,
+    "tiempo_doc_sd_min": 0.6,
+    "secciones": 40,
+    "est_por_seccion": 25,
+    "p_invitacion_entregada": 0.95,
+    "p_inicia_diag": 0.78,
+    "p_completa_diag": 0.9,
+    "p_activa": 0.7,
+    "p_sostiene": 0.65,
+    "reprob_control": 0.32,
+    "efecto_sostenido_pp": 0.15,
+    "efecto_activado_pp": 0.06,
+    "icc": 0.05,
+    "docentes_trat": 10,
+    "p_docente_adopta": 0.8,
+    "p_satisf_4_5": 0.78,
+    "p_responde_encuesta": 0.45,
+    "costo_piloto_clp": 15000000,
+    "min_docente_base": 45.0,
+    "min_docente_mvp": 6.0,
+    "mc_reps": 5000
+  },
+  "prueba_tareas": {
+    "T1_diag_sin_ayuda_15min": 9,
+    "T1_n": 10,
+    "tiempo_diag_mediana": 10.775593251769934,
+    "T2_modulo_completado": 9,
+    "T2_n": 10,
+    "T3_docente_identifica_2min": 2,
+    "T3_n": 5,
+    "tiempo_doc_mediana": 1.3255688133088346
+  },
+  "piloto": {
+    "N": 1000,
+    "nT": 500,
+    "nC": 500,
+    "entregada": 476,
+    "inicia": 367,
+    "completa": 328,
+    "activa": 228,
+    "sostiene": 136,
+    "reprob_T": 0.256,
+    "reprob_C": 0.278,
+    "diff_pp": 2.200000000000002,
+    "ic95_pp": [
+      -5.931501206542366,
+      10.33150120654237
+    ],
+    "significativo": false,
+    "design_effect": 2.2,
+    "doc_adopta": 5,
+    "doc_n": 10,
+    "encuesta_resp": 105,
+    "satisf_4_5": 90,
+    "costo_por_activado": 65789.47368421052,
+    "horas_docente_liberadas_sem": 13.0
+  },
+  "monte_carlo": {
+    "diff_p5": -1.0000000000000009,
+    "diff_p50": 5.3999999999999995,
+    "diff_p95": 12.010000000000037,
+    "potencia": 0.2356,
+    "adop_p5": 0.43,
+    "adop_p95": 0.504
+  },
+  "potencia_secciones": {
+    "40": 0.23,
+    "60": 0.348,
+    "80": 0.43,
+    "100": 0.54
+  }
+}

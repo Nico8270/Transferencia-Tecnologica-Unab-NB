@@ -1,0 +1,353 @@
+<title>NivelaTec MVP</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: barra superior con cambio de rol + una columna de trabajo; el panel docente usa grilla de tabla + alertas */
+:root{
+  --bg:#f3f5f4; --surface:#ffffff; --ink:#18232e; --muted:#5b6872; --line:#d8dfdc;
+  --accent:#1f6f54; --accent-soft:#dcefe6; --hi:#f1c232; --hi-soft:#fdf3cf;
+  --risk:#b4372f; --risk-soft:#f8e1de; --mid:#b9770e; --mid-soft:#fbecd4; --ok:#2e7d4f; --ok-soft:#e0f1e6;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Figtree", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111a20; --surface:#18232c; --ink:#e7eeea; --muted:#9aa9a3; --line:#2b3a42;
+  --accent:#5cc49a; --accent-soft:#1d3a30; --hi:#f1c232; --hi-soft:#3a3218;
+  --risk:#f08a80; --risk-soft:#3d2422; --mid:#f0b45a; --mid-soft:#3a2e1a; --ok:#6fd096; --ok-soft:#1d3527; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111a20; --surface:#18232c; --ink:#e7eeea; --muted:#9aa9a3; --line:#2b3a42;
+  --accent:#5cc49a; --accent-soft:#1d3a30; --hi:#f1c232; --hi-soft:#3a3218;
+  --risk:#f08a80; --risk-soft:#3d2422; --mid:#f0b45a; --mid-soft:#3a2e1a; --ok:#6fd096; --ok-soft:#1d3527; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding-block:6px 14px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand b{font-family:var(--f-display);font-size:26px;letter-spacing:-.01em}
+.brand b span{color:var(--accent)}
+.brand small{color:var(--muted);font-size:13px}
+nav.roles{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px;flex-wrap:wrap}
+nav.roles button{border:0;background:transparent;color:var(--muted);font:600 14px var(--f-body);padding:8px 14px;border-radius:7px;cursor:pointer}
+nav.roles button[aria-selected="true"]{background:var(--accent);color:var(--surface)}
+nav.roles button:focus-visible,button:focus-visible,.opt:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+.note{margin:14px 0 18px;font-size:13px;color:var(--muted);background:var(--hi-soft);border-left:3px solid var(--hi);padding:8px 12px;border-radius:4px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+h1{font-size:30px;line-height:1.15;letter-spacing:-.015em}
+h2{font-size:22px}
+h3{font-size:17px}
+.lead{color:var(--muted);max-width:62ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{border:0;background:var(--accent);color:var(--surface);font:600 15px var(--f-body);padding:11px 18px;border-radius:9px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.eyebrow{font:500 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 14px var(--f-body);padding:8px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.progress{height:6px;background:var(--line);border-radius:6px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.passage{background:var(--bg);border:1px dashed var(--line);border-radius:8px;padding:12px 14px;font-size:14px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 15px var(--f-body);padding:12px 14px;border-radius:9px;cursor:pointer}
+.opt .k{font:500 13px var(--f-mono);color:var(--muted);min-width:18px}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--risk);background:var(--risk-soft)}
+.fb{border-radius:8px;padding:12px 14px;font-size:14px}
+.fb.ok{background:var(--ok-soft);border-left:3px solid var(--ok)}
+.fb.no{background:var(--risk-soft);border-left:3px solid var(--risk)}
+.skills{display:grid;gap:12px}
+.skill{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr) 52px;gap:12px;align-items:center}
+.bar{height:12px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%}
+.num{font:500 14px var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+ol.route{margin:0;padding-left:0;list-style:none;display:grid;gap:10px;counter-reset:r}
+ol.route li{counter-increment:r;display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:var(--surface)}
+ol.route li::before{content:counter(r);font:500 13px var(--f-mono);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);flex:none}
+ol.route li.done::before{content:"✓";background:var(--ok);color:var(--surface)}
+.pill{display:inline-block;font:600 12px var(--f-body);padding:3px 9px;border-radius:999px}
+.pill.alto{background:var(--risk-soft);color:var(--risk)}
+.pill.medio{background:var(--mid-soft);color:var(--mid)}
+.pill.bajo{background:var(--ok-soft);color:var(--ok)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
+.kpi b{display:block;font:500 24px var(--f-mono);font-variant-numeric:tabular-nums}
+.kpi span{font-size:13px;color:var(--muted)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font:500 12px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--bg)}
+td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+tr.me td{background:var(--hi-soft)}
+.alert{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;border:1px solid var(--line);border-left:4px solid var(--risk);border-radius:8px;padding:10px 12px;background:var(--surface)}
+.alert.attended{border-left-color:var(--ok);opacity:.75}
+.alert p{margin:0;min-width:0}
+.small{font-size:13px;color:var(--muted)}
+.mono{font-family:var(--f-mono)}
+.funnel{display:grid;gap:8px}
+.funnel div{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr) 40px;gap:10px;align-items:center;font-size:14px}
+@media (max-width:720px){.grid2,.kpis{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.skill{grid-template-columns:minmax(0,1fr) 52px}.skill .bar{grid-column:1/-1;order:3}h1{font-size:25px}}
+@media (max-width:460px){.grid2{grid-template-columns:minmax(0,1fr)}.funnel div{grid-template-columns:minmax(0,1fr) 40px}.funnel .bar{grid-column:1/-1}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><b>Nivela<span>Tec</span></b><small>Prototipo MVP v0.3 · CINF113</small></div>
+    <nav class="roles" role="tablist" aria-label="Rol">
+      <button id="tab-est" role="tab" aria-selected="true" data-view="est">Estudiante</button>
+      <button id="tab-doc" role="tab" aria-selected="false" data-view="doc">Docente</button>
+      <button id="tab-ev" role="tab" aria-selected="false" data-view="ev">Registro de eventos</button>
+    </nav>
+  </header>
+  <p class="note">Prototipo para pruebas de tarea. Los estudiantes, notas y secciones son ficticios. La retroalimentación usa reglas por error frecuente (versión “Mago de Oz”); el modelo de IA generativa se incorpora en la versión 2.</p>
+
+  <main id="view-est" class="stack"></main>
+  <main id="view-doc" class="stack" hidden></main>
+  <main id="view-ev" class="stack" hidden></main>
+</div>
+
+<script>
+(function(){
+"use strict";
+var SKILLS={
+  M1:{name:"Operatoria y fracciones",short:"Fracciones"},
+  M2:{name:"Proporciones y porcentajes",short:"Porcentajes"},
+  M3:{name:"Ecuaciones lineales",short:"Álgebra"},
+  L1:{name:"Comprensión lectora técnica",short:"Lectura"}
+};
+var PASSAGE="Protocolo: antes de manipular el equipo, el técnico debe desconectar la alimentación eléctrica y verificar con un multímetro que no haya tensión. Solo después puede retirar la carcasa. Si el equipo estuvo encendido en la última hora, debe esperar diez minutos para que los condensadores se descarguen.";
+// q: enunciado, o: opciones, a: índice correcto, f: retroalimentación por opción incorrecta, h: pista
+var BANK=[
+ {id:"M1-1a",s:"M1",l:1,q:"Un técnico usa 3/4 de litro de aceite y luego agrega 1/4 de litro más. ¿Cuánto usó en total?",o:["1 litro","4/8 de litro","3/16 de litro","1/2 litro"],a:0,f:{1:"Sumaste numeradores y denominadores. Con igual denominador se suman solo los numeradores: 3/4 + 1/4 = 4/4 = 1.",2:"Multiplicaste las fracciones. Aquí se pide una suma.",3:"Restaste. “Agrega” indica suma."},h:"Ambas fracciones tienen denominador 4."},
+ {id:"M1-1b",s:"M1",l:1,q:"¿Cuánto es 12 − 3 × 2?",o:["6","18","3","9"],a:0,f:{1:"Operaste de izquierda a derecha. La multiplicación va primero: 3 × 2 = 6 y luego 12 − 6 = 6.",2:"Revisa el orden: primero 3 × 2.",3:"Restaste 3 y no multiplicaste por 2."},h:"Multiplicación antes que resta."},
+ {id:"M1-2a",s:"M1",l:2,q:"¿Cuánto es 1/2 + 1/3?",o:["5/6","2/5","1/5","2/6"],a:0,f:{1:"Sumaste numeradores y denominadores. Usa denominador común 6: 3/6 + 2/6 = 5/6.",2:"Usa denominador común 6: 3/6 + 2/6.",3:"El denominador común es 6, pero 1/2 equivale a 3/6, no a 1/6."},h:"Busca un denominador que sea múltiplo de 2 y de 3."},
+ {id:"M1-2b",s:"M1",l:2,q:"Una bodega con capacidad para 90 cajas está ocupada en 2/3. ¿Cuántas cajas hay?",o:["60","30","45","135"],a:0,f:{1:"Calculaste solo 1/3 (90 ÷ 3). Falta multiplicar por 2.",2:"45 es la mitad. Se pide 2/3 de 90.",3:"Multiplicaste por 3/2 en vez de 2/3."},h:"Divide 90 en 3 partes iguales y toma 2."},
+ {id:"M1-3a",s:"M1",l:3,q:"¿Cuánto es (2/3) ÷ (4/9)?",o:["3/2","8/27","2/3","1/6"],a:0,f:{1:"Multiplicaste directo. Dividir es multiplicar por el inverso: 2/3 × 9/4 = 18/12 = 3/2.",2:"Revisa: 2/3 × 9/4.",3:"Dividir es multiplicar por el inverso de 4/9, que es 9/4."},h:"Invierte la segunda fracción."},
+ {id:"M1-3b",s:"M1",l:3,q:"Calcula 5 − 2 · (3 − 7).",o:["13","−3","12","−13"],a:0,f:{1:"El paréntesis da −4, y −2 · (−4) = +8. Entonces 5 + 8 = 13.",2:"Revisa el signo: 3 − 7 = −4.",3:"Menos por menos da más: −2 · (−4) = +8."},h:"Resuelve el paréntesis y cuida los signos."},
+ {id:"M2-1a",s:"M2",l:1,q:"Un repuesto cuesta $20.000 y tiene 10% de descuento. ¿De cuánto es el descuento?",o:["$2.000","$200","$10.000","$18.000"],a:0,f:{1:"10% de 20.000 es 20.000 × 0,10 = 2.000.",2:"$10.000 sería el 50%.",3:"$18.000 es el precio final, no el descuento."},h:"10% es dividir por 10."},
+ {id:"M2-1b",s:"M2",l:1,q:"Si 2 kg de un producto cuestan $3.000, ¿cuánto cuestan 6 kg?",o:["$9.000","$6.000","$4.000","$18.000"],a:0,f:{1:"6 kg es el triple de 2 kg, así que el precio también se triplica.",2:"Sumaste en vez de multiplicar. 6 kg es el triple de 2 kg.",3:"Multiplicaste 3.000 por 6; debes multiplicar por 3."},h:"¿Cuántas veces cabe 2 kg en 6 kg?"},
+ {id:"M2-2a",s:"M2",l:2,q:"Un paciente debe recibir 5 mg por cada kg de peso. Pesa 60 kg. ¿Cuántos mg recibe?",o:["300 mg","12 mg","65 mg","3.000 mg"],a:0,f:{1:"Dividiste 60 ÷ 5. La dosis por kg se multiplica: 5 × 60 = 300.",2:"Sumaste. “Por cada kg” indica multiplicación.",3:"Revisa los ceros: 5 × 60 = 300."},h:"mg por kg × kg."},
+ {id:"M2-2b",s:"M2",l:2,q:"Las ventas subieron de 80 a 100 unidades. ¿En qué porcentaje aumentaron?",o:["25%","20%","80%","120%"],a:0,f:{1:"Calculaste el aumento sobre 100. La base es el valor inicial: 20 ÷ 80 = 25%.",2:"80% es la razón 80/100, no el aumento.",3:"Ese sería el valor final si fuera 120% de 100."},h:"Aumento ÷ valor inicial."},
+ {id:"M2-3a",s:"M2",l:3,q:"Un precio con IVA (19%) es $11.900. ¿Cuál es el precio sin IVA?",o:["$10.000","$9.639","$9.900","$14.161"],a:0,f:{1:"Restaste el 19% del total. El IVA se calculó sobre el neto: 11.900 ÷ 1,19 = 10.000.",2:"Restaste 2.000; el IVA es 19% del neto.",3:"Agregaste IVA otra vez."},h:"Total = neto × 1,19."},
+ {id:"M2-3b",s:"M2",l:3,q:"3 operarios hacen un trabajo en 8 horas. Al mismo ritmo, ¿cuánto tardan 6 operarios?",o:["4 horas","16 horas","11 horas","2 horas"],a:0,f:{1:"Más operarios terminan antes: es proporcionalidad inversa. 3 × 8 = 6 × t, t = 4.",2:"Sumaste 3 horas. Es proporcionalidad inversa.",3:"Revisa: con el doble de operarios el tiempo se reduce a la mitad, no a la cuarta parte."},h:"¿Más operarios implica más o menos tiempo?"},
+ {id:"M3-1a",s:"M3",l:1,q:"Resuelve: x + 7 = 12",o:["x = 5","x = 19","x = 7/12","x = −5"],a:0,f:{1:"Sumaste 7. Para despejar x, resta 7 en ambos lados.",2:"No es una división; resta 7.",3:"Revisa el signo: 12 − 7 = 5."},h:"Lo que suma pasa restando."},
+ {id:"M3-1b",s:"M3",l:1,q:"Resuelve: 3x = 21",o:["x = 7","x = 18","x = 24","x = 63"],a:0,f:{1:"Restaste 3. Para despejar, divide por 3.",2:"Sumaste 3. Divide por 3.",3:"Multiplicaste; debes dividir."},h:"Lo que multiplica pasa dividiendo."},
+ {id:"M3-2a",s:"M3",l:2,q:"Resuelve: 2x + 5 = 17",o:["x = 6","x = 11","x = 8,5","x = 12"],a:0,f:{1:"Restaste 5 pero faltó dividir por 2: 12 ÷ 2 = 6.",2:"Dividiste 17 ÷ 2 antes de restar 5.",3:"12 es 2x; falta dividir por 2."},h:"Primero resta 5, luego divide."},
+ {id:"M3-2b",s:"M3",l:2,q:"Un taller cobra $15.000 fijos más $8.000 por hora. Si cobró $47.000, ¿cuántas horas trabajó?",o:["4","5","6","3"],a:0,f:{1:"Plantea 15.000 + 8.000h = 47.000; entonces 8.000h = 32.000 y h = 4.",2:"Dividiste 47.000 ÷ 8.000 sin restar el cargo fijo.",3:"Revisa la resta: 47.000 − 15.000 = 32.000."},h:"Resta primero el cargo fijo."},
+ {id:"M3-3a",s:"M3",l:3,q:"Resuelve: 3(x − 2) = 2x + 4",o:["x = 10","x = 2","x = 6","x = −2"],a:0,f:{1:"Distribuye: 3x − 6 = 2x + 4, luego x = 10.",2:"Faltó distribuir el 3 sobre el −2: 3x − 6.",3:"Revisa signos al trasladar términos."},h:"Aplica la propiedad distributiva."},
+ {id:"M3-3b",s:"M3",l:3,q:"Despeja t en la fórmula d = v · t",o:["t = d / v","t = d · v","t = v / d","t = d − v"],a:0,f:{1:"v multiplica a t, así que pasa dividiendo.",2:"Invertiste la fracción.",3:"v multiplica, no suma."},h:"Divide ambos lados por v."},
+ {id:"L1-1a",s:"L1",l:1,p:1,q:"Según el texto, ¿qué debe hacer primero el técnico?",o:["Desconectar la alimentación eléctrica","Retirar la carcasa","Esperar diez minutos","Medir la carcasa con el multímetro"],a:0,f:{1:"El texto dice “solo después” de verificar puede retirar la carcasa.",2:"La espera solo aplica si estuvo encendido en la última hora.",3:"El multímetro se usa para verificar tensión, después de desconectar."},h:"Busca la palabra “antes”."},
+ {id:"L1-1b",s:"L1",l:1,p:1,q:"¿Qué instrumento menciona el protocolo?",o:["Multímetro","Osciloscopio","Termómetro","Ninguno"],a:0,f:{1:"Relee la segunda línea.",2:"Relee la segunda línea.",3:"Sí se menciona un instrumento."},h:"Está en la primera oración."},
+ {id:"L1-2a",s:"L1",l:2,p:1,q:"¿Por qué en algunos casos hay que esperar diez minutos?",o:["Para que se descarguen los condensadores","Para que el multímetro se calibre","Para enfriar la carcasa","Porque lo exige la garantía"],a:0,f:{1:"El texto no habla de calibración.",2:"El texto no menciona temperatura.",3:"La garantía no aparece en el texto."},h:"Lee la última oración."},
+ {id:"L1-2b",s:"L1",l:2,p:1,q:"¿En qué caso NO es necesario esperar diez minutos?",o:["Si el equipo no estuvo encendido en la última hora","Siempre hay que esperar","Si se usó el multímetro","Si ya se retiró la carcasa"],a:0,f:{1:"La espera es condicional: “si el equipo estuvo encendido…”.",2:"Medir tensión no reemplaza la espera.",3:"La espera ocurre antes de retirar la carcasa."},h:"Fíjate en la palabra “si”."},
+ {id:"L1-3a",s:"L1",l:3,p:1,q:"¿Cuál es la idea principal del texto?",o:["Seguir una secuencia de seguridad antes de abrir un equipo","Explicar cómo funciona un multímetro","Describir los condensadores","Indicar cuánto dura una reparación"],a:0,f:{1:"El multímetro es un detalle, no la idea central.",2:"Los condensadores se mencionan como razón de una espera.",3:"El texto no habla de duración de reparaciones."},h:"¿Qué tienen en común todas las oraciones?"},
+ {id:"L1-3b",s:"L1",l:3,p:1,q:"Un técnico apagó el equipo hace 3 minutos y verificó que no hay tensión. ¿Qué debe hacer?",o:["Esperar antes de retirar la carcasa","Retirar la carcasa de inmediato","Volver a conectar el equipo","Medir otra vez y abrir"],a:0,f:{1:"Estuvo encendido en la última hora: debe completar diez minutos de espera.",2:"Reconectar no forma parte del protocolo.",3:"La medición no reemplaza la espera de diez minutos."},h:"¿Se cumple la condición de la última oración?"}
+];
+var ORDER=["M1","M2","M3","L1"], PER_SKILL=3;
+
+// ---------- estado ----------
+var S={view:"est",step:"inicio",carrera:null,diag:null,result:null,module:null,events:[],alerts:{},routeDone:{}};
+function now(){return new Date();}
+function hhmm(d){return d.toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit",second:"2-digit"});}
+function log(actor,ev,det){S.events.push({t:now(),actor:actor,ev:ev,det:det||""});}
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+
+// pestañas
+document.querySelectorAll("nav.roles button").forEach(function(b){b.addEventListener("click",function(){go(b.dataset.view);});});
+function go(v){S.view=v;["est","doc","ev"].forEach(function(k){$("view-"+k).hidden=(k!==v);$("tab-"+k).setAttribute("aria-selected",k===v?"true":"false");});render();}
+
+// ---------- diagnóstico adaptativo ----------
+function startDiag(){
+  S.diag={skillIdx:0,level:{},asked:{},used:{},answers:[],t0:Date.now(),current:null,chosen:null};
+  ORDER.forEach(function(k){S.diag.level[k]=2;S.diag.asked[k]=0;});
+  log("estudiante","diagnostico_iniciado","carrera: "+S.carrera);
+  nextItem();S.step="diag";render();
+}
+function nextItem(){
+  var d=S.diag;
+  while(d.skillIdx<ORDER.length && d.asked[ORDER[d.skillIdx]]>=PER_SKILL) d.skillIdx++;
+  if(d.skillIdx>=ORDER.length){finishDiag();return;}
+  var sk=ORDER[d.skillIdx], lv=Math.max(1,Math.min(3,d.level[sk]));
+  var pool=BANK.filter(function(i){return i.s===sk&&i.l===lv&&!d.used[i.id];});
+  if(!pool.length) pool=BANK.filter(function(i){return i.s===sk&&!d.used[i.id];});
+  d.current=pool[0]; d.chosen=null;
+}
+function answerDiag(idx){
+  var d=S.diag,it=d.current,ok=(idx===it.a);
+  d.used[it.id]=true; d.asked[it.s]++;
+  d.answers.push({id:it.id,s:it.s,l:it.l,ok:ok,choice:idx});
+  d.level[it.s]+= ok?1:-1; d.level[it.s]=Math.max(0,Math.min(4,d.level[it.s]));
+  nextItem(); render();
+}
+function finishDiag(){
+  var d=S.diag,res={};
+  ORDER.forEach(function(k){
+    var ans=d.answers.filter(function(a){return a.s===k;});
+    var w=0,tot=0; ans.forEach(function(a){tot+=a.l; if(a.ok) w+=a.l;});
+    // dominio = nivel final (0–4) ponderado con aciertos ponderados por dificultad
+    var m=Math.round(100*(0.6*(d.level[k]/4)+0.4*(tot?w/tot:0)));
+    res[k]=m;
+  });
+  var mins=((Date.now()-d.t0)/60000);
+  S.result={dom:res,mins:mins,route:ORDER.slice().sort(function(a,b){return res[a]-res[b];}).filter(function(k){return res[k]<75;})};
+  if(!S.result.route.length) S.result.route=[ORDER.slice().sort(function(a,b){return res[a]-res[b];})[0]];
+  S.step="resultado";
+  log("estudiante","diagnostico_completado",ORDER.map(function(k){return SKILLS[k].short+" "+res[k]+"%";}).join(" · "));
+  log("sistema","ruta_generada",S.result.route.map(function(k){return SKILLS[k].short;}).join(" → "));
+}
+function colorFor(v){return v<40?"var(--risk)":v<75?"var(--mid)":"var(--ok)";}
+
+// ---------- módulo de práctica ----------
+function startModule(sk){
+  var items=BANK.filter(function(i){return i.s===sk;}).sort(function(a,b){return a.l-b.l;});
+  var unused=items.filter(function(i){return !S.diag.used[i.id];});
+  var seq=unused.concat(items.filter(function(i){return S.diag.used[i.id];})).slice(0,4);
+  S.module={sk:sk,items:seq,i:0,chosen:null,checked:false,hint:false,correct:0,attempts:0};
+  S.step="modulo"; log("estudiante","modulo_iniciado",SKILLS[sk].name); render();
+}
+function checkModule(){
+  var m=S.module,it=m.items[m.i]; if(m.chosen===null) return;
+  m.checked=true; m.attempts++;
+  var ok=(m.chosen===it.a); if(ok) m.correct++;
+  log("estudiante",ok?"ejercicio_correcto":"ejercicio_incorrecto",it.id+(ok?"":" · retroalimentación mostrada"));
+  render();
+}
+function nextModule(){
+  var m=S.module; m.i++; m.chosen=null; m.checked=false; m.hint=false;
+  if(m.i>=m.items.length){
+    S.routeDone[m.sk]=true; S.step="constancia";
+    log("estudiante","modulo_completado",SKILLS[m.sk].name+" · "+m.correct+"/"+m.items.length+" correctas");
+  }
+  render();
+}
+
+// ---------- render estudiante ----------
+function renderEst(){
+  var el=$("view-est"),h="";
+  if(S.step==="inicio"){
+    h+='<section class="card stack"><span class="eyebrow">Matemática I · Semana 1</span>'+
+       '<h1>Antes de tu primera prueba, veamos desde dónde partes</h1>'+
+       '<p class="lead">Son 12 preguntas cortas de matemática y lectura técnica. Se ajustan a tus respuestas, así que no hay que responderlo todo bien. Al terminar recibes una ruta de práctica de 15 a 20 minutos por tema. Tu resultado no afecta tu nota.</p>'+
+       '<div class="stack"><span class="eyebrow">¿Qué estudias?</span><div class="chips" id="carreras">'+
+       ["Técnico en Mecánica Automotriz","Técnico en Enfermería","Técnico en Administración"].map(function(c){return '<button class="chip" aria-pressed="'+(S.carrera===c)+'" data-c="'+esc(c)+'">'+esc(c)+'</button>';}).join("")+
+       '</div></div><div class="row"><button class="btn" id="start" '+(S.carrera?"":"disabled")+'>Comenzar diagnóstico</button><span class="small">Tiempo estimado: 10 minutos</span></div></section>';
+    el.innerHTML=h;
+    el.querySelectorAll("#carreras .chip").forEach(function(b){b.onclick=function(){S.carrera=b.dataset.c; if(!S.events.some(function(e){return e.ev==="invitacion_abierta";})) log("estudiante","invitacion_abierta","enlace desde aula virtual (LTI)"); render();};});
+    $("start").onclick=startDiag; return;
+  }
+  if(S.step==="diag"){
+    var d=S.diag,it=d.current,n=d.answers.length,total=ORDER.length*PER_SKILL;
+    h+='<section class="card stack"><div class="row" style="justify-content:space-between"><span class="eyebrow">Pregunta '+(n+1)+' de '+total+' · '+SKILLS[it.s].name+'</span><span class="small mono">nivel '+it.l+'</span></div>'+
+       '<div class="progress" aria-hidden="true"><i style="width:'+(100*n/total)+'%"></i></div>'+
+       (it.p?'<div class="passage">'+esc(PASSAGE)+'</div>':'')+
+       '<h2>'+esc(it.q)+'</h2><div class="opts" id="opts">'+
+       shuffled(it).map(function(o){return '<button class="opt'+(d.chosen===o.i?" sel":"")+'" data-i="'+o.i+'"><span class="k">'+"ABCD"[o.pos]+'</span><span>'+esc(o.t)+'</span></button>';}).join("")+
+       '</div><div class="row"><button class="btn" id="next" '+(d.chosen===null?"disabled":"")+'>Responder</button><span class="small">En el diagnóstico no se muestra si acertaste; eso viene en la ruta.</span></div></section>';
+    el.innerHTML=h;
+    el.querySelectorAll("#opts .opt").forEach(function(b){b.onclick=function(){d.chosen=+b.dataset.i;render();};});
+    $("next").onclick=function(){answerDiag(d.chosen);}; return;
+  }
+  if(S.step==="resultado"||S.step==="constancia"){
+    var r=S.result;
+    if(S.step==="constancia"){
+      var m=S.module;
+      h+='<section class="card stack" style="border-color:var(--ok)"><span class="eyebrow">Constancia</span><h2>Completaste el módulo “'+esc(SKILLS[m.sk].name)+'”</h2>'+
+         '<p>Resolviste '+m.correct+' de '+m.items.length+' ejercicios correctamente. Tu docente verá tu avance en el panel del curso.</p></section>';
+    }
+    h+='<section class="card stack"><span class="eyebrow">Tu punto de partida</span><h2>Resultado del diagnóstico</h2><div class="skills">'+
+       ORDER.map(function(k){var v=r.dom[k];return '<div class="skill"><span>'+SKILLS[k].name+'</span><div class="bar"><i style="width:'+v+'%;background:'+colorFor(v)+'"></i></div><span class="num">'+v+'%</span></div>';}).join("")+
+       '</div><p class="small">Dominio estimado 0–100 según el nivel alcanzado en preguntas adaptativas. Bajo 40: prioridad alta · 40–74: reforzar · 75 o más: dominado.</p></section>';
+    h+='<section class="card stack"><span class="eyebrow">Tu ruta personalizada</span><h2>Practica en este orden</h2><ol class="route">'+
+       r.route.map(function(k){var done=!!S.routeDone[k];return '<li class="'+(done?"done":"")+'"><div style="flex:1;min-width:0"><b>'+SKILLS[k].name+'</b><div class="small">4 ejercicios con retroalimentación · ~15 min</div></div>'+(done?'<span class="pill bajo">Completado</span>':'<button class="btn ghost" data-sk="'+k+'">Practicar</button>')+'</li>';}).join("")+
+       '</ol></section>';
+    el.innerHTML=h;
+    el.querySelectorAll("[data-sk]").forEach(function(b){b.onclick=function(){startModule(b.dataset.sk);};}); return;
+  }
+  if(S.step==="modulo"){
+    var m=S.module,it=m.items[m.i],okc=m.checked&&m.chosen===it.a;
+    h+='<section class="card stack"><div class="row" style="justify-content:space-between"><span class="eyebrow">'+esc(SKILLS[m.sk].name)+' · ejercicio '+(m.i+1)+' de '+m.items.length+'</span><button class="btn ghost" id="hint" '+(m.checked?"disabled":"")+'>Ver pista</button></div>'+
+       '<div class="progress" aria-hidden="true"><i style="width:'+(100*m.i/m.items.length)+'%"></i></div>'+
+       (it.p?'<div class="passage">'+esc(PASSAGE)+'</div>':'')+
+       '<h2>'+esc(it.q)+'</h2>'+(m.hint&&!m.checked?'<div class="fb" style="background:var(--hi-soft);border-left:3px solid var(--hi)">Pista: '+esc(it.h)+'</div>':'')+
+       '<div class="opts" id="opts">'+shuffled(it).map(function(o){var cls="";if(m.checked){if(o.i===it.a)cls=" right";else if(o.i===m.chosen)cls=" wrong";}else if(m.chosen===o.i)cls=" sel";
+         return '<button class="opt'+cls+'" data-i="'+o.i+'" '+(m.checked?"disabled":"")+'><span class="k">'+"ABCD"[o.pos]+'</span><span>'+esc(o.t)+'</span></button>';}).join("")+'</div>'+
+       (m.checked?'<div class="fb '+(okc?"ok":"no")+'"><b>'+(okc?"Correcto.":"Revisemos el error.")+'</b> '+(okc?"Bien resuelto.":esc(it.f[m.chosen]||""))+'</div>':'')+
+       '<div class="row">'+(m.checked?'<button class="btn" id="nx">'+(m.i+1<m.items.length?"Siguiente ejercicio":"Terminar módulo")+'</button>':'<button class="btn" id="ck" '+(m.chosen===null?"disabled":"")+'>Comprobar</button>')+'</div></section>';
+    el.innerHTML=h;
+    el.querySelectorAll("#opts .opt").forEach(function(b){b.onclick=function(){m.chosen=+b.dataset.i;render();};});
+    if($("ck")) $("ck").onclick=checkModule; if($("nx")) $("nx").onclick=nextModule;
+    $("hint").onclick=function(){m.hint=true;log("estudiante","pista_solicitada",it.id);render();};
+  }
+}
+// orden de opciones estable por ítem (determinista)
+function shuffled(it){var seed=0;for(var c=0;c<it.id.length;c++)seed=(seed*31+it.id.charCodeAt(c))%9973;
+  var arr=it.o.map(function(t,i){return {t:t,i:i};});
+  for(var j=arr.length-1;j>0;j--){seed=(seed*7919+13)%9973;var k=seed%(j+1);var tmp=arr[j];arr[j]=arr[k];arr[k]=tmp;}
+  arr.forEach(function(o,p){o.pos=p;});return arr;}
+
+// ---------- panel docente ----------
+var ROSTER=[
+ ["Camila Rojas",82,100,1,5.8],["Diego Muñoz",34,10,9,null],["Valentina Soto",55,40,3,4.1],["Matías González",71,75,2,5.0],
+ ["Javiera Díaz",28,0,12,null],["Benjamín Pérez",63,50,4,4.4],["Fernanda Silva",47,20,8,3.6],["Tomás Contreras",90,100,1,6.2],
+ ["Isidora Morales",39,30,6,3.9],["Joaquín Fuentes",58,60,2,4.6],["Catalina Araya",76,80,2,5.4],["Vicente Castillo",31,20,10,3.2],
+ ["Antonia Espinoza",66,70,3,4.9],["Lucas Reyes",44,40,5,4.0],["Martina Herrera",52,25,7,null],["Agustín Vargas",85,90,1,5.9],
+ ["Sofía Núñez",61,55,3,4.5],["Maximiliano Tapia",36,15,11,null],["Florencia Gutiérrez",70,65,2,5.1],["Cristóbal Pizarro",49,45,4,4.2],
+ ["Emilia Sepúlveda",57,35,6,4.3],["Francisco Vera",42,30,9,3.7],["Trinidad Carrasco",79,85,1,5.6]
+];
+function risk(diag,av,inact){ if((diag<40&&av<35)||inact>=10) return "alto"; if(diag<55||av<40||inact>=6) return "medio"; return "bajo"; }
+function rosterRows(){
+  var rows=ROSTER.map(function(r,i){return {id:"s"+i,name:r[0],diag:r[1],av:r[2],inact:r[3],p1:r[4],me:false};});
+  if(S.result){var vals=ORDER.filter(function(k){return k!=="L1";}).map(function(k){return S.result.dom[k];});
+    var math=Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length);
+    var done=Object.keys(S.routeDone).length, av=Math.round(100*done/S.result.route.length);
+    rows.unshift({id:"me",name:"Tú (estudiante de la demo)",diag:math,av:av,inact:0,p1:null,me:true});}
+  rows.forEach(function(r){r.risk=risk(r.diag,r.av,r.inact);});
+  return rows;
+}
+var docFilter="todos";
+function renderDoc(){
+  var rows=rosterRows(),el=$("view-doc");
+  var cnt={alto:0,medio:0,bajo:0}; rows.forEach(function(r){cnt[r.risk]++;});
+  var diagDone=rows.length, avgAv=Math.round(rows.reduce(function(a,r){return a+r.av;},0)/rows.length);
+  var altos=rows.filter(function(r){return r.risk==="alto";});
+  var h='<section class="stack"><div><span class="eyebrow">Matemática I · Sección 101 · Mecánica Automotriz · Semana 4 de 18</span><h1>Panel de alerta temprana</h1><p class="lead">La Prueba 1 es en la semana 5. Las alertas combinan diagnóstico de entrada, avance en la ruta y días sin actividad.</p></div>'+
+    '<div class="kpis"><div class="kpi"><b>'+diagDone+'</b><span>estudiantes con diagnóstico</span></div><div class="kpi"><b>'+avgAv+'%</b><span>avance promedio en la ruta</span></div><div class="kpi"><b style="color:var(--risk)">'+cnt.alto+'</b><span>en riesgo alto</span></div><div class="kpi"><b style="color:var(--mid)">'+cnt.medio+'</b><span>en riesgo medio</span></div></div></section>';
+  h+='<section class="card stack"><h3>Alertas para esta semana</h3>'+altos.map(function(r){var at=S.alerts[r.id];
+     var why=[]; if(r.diag<40) why.push("diagnóstico "+r.diag+"%"); if(r.av<35) why.push("avance "+r.av+"%"); if(r.inact>=10) why.push(r.inact+" días sin actividad");
+     return '<div class="alert'+(at?" attended":"")+'"><p><b>'+esc(r.name)+'</b><br><span class="small">'+why.join(" · ")+'</span></p>'+(at?'<span class="small">Contacto registrado '+hhmm(at)+'</span>':'<button class="btn ghost" data-al="'+r.id+'">Registrar contacto</button>')+'</div>';}).join("")+
+     (altos.length?'':'<p class="small">Sin alertas de riesgo alto.</p>')+'</section>';
+  h+='<section class="stack"><div class="row" style="justify-content:space-between"><h3>Curso completo</h3><div class="chips" id="flt">'+["todos","alto","medio","bajo"].map(function(f){return '<button class="chip" aria-pressed="'+(docFilter===f)+'" data-f="'+f+'">'+(f==="todos"?"Todos":"Riesgo "+f)+'</button>';}).join("")+'</div></div>'+
+     '<div class="tablewrap"><table><thead><tr><th>Estudiante</th><th>Riesgo</th><th style="text-align:right">Diagnóstico mat.</th><th style="text-align:right">Avance ruta</th><th style="text-align:right">Días sin actividad</th><th style="text-align:right">Control 1</th></tr></thead><tbody>'+
+     rows.filter(function(r){return docFilter==="todos"||r.risk===docFilter;}).sort(function(a,b){var o={alto:0,medio:1,bajo:2};return (b.me-a.me)||(o[a.risk]-o[b.risk])||(a.diag-b.diag);}).map(function(r){
+       return '<tr class="'+(r.me?"me":"")+'"><td>'+esc(r.name)+'</td><td><span class="pill '+r.risk+'">'+r.risk+'</span></td><td class="n">'+r.diag+'%</td><td class="n">'+r.av+'%</td><td class="n">'+r.inact+'</td><td class="n">'+(r.p1===null?"—":r.p1.toFixed(1).replace(".",","))+'</td></tr>';}).join("")+
+     '</tbody></table></div><p class="small">Regla de riesgo v0: alto si diagnóstico &lt; 40% y avance &lt; 35%, o 10+ días sin actividad; medio si diagnóstico &lt; 55%, avance &lt; 40% o 6+ días sin actividad. La regla se recalibra con datos del piloto. “—” = sin nota registrada.</p></section>';
+  el.innerHTML=h;
+  el.querySelectorAll("[data-al]").forEach(function(b){b.onclick=function(){var r=rows.filter(function(x){return x.id===b.dataset.al;})[0];S.alerts[r.id]=now();log("docente","alerta_atendida",r.name);render();};});
+  el.querySelectorAll("#flt .chip").forEach(function(b){b.onclick=function(){docFilter=b.dataset.f;render();};});
+}
+
+// ---------- registro de eventos ----------
+function renderEv(){
+  var el=$("view-ev"),E=S.events;
+  function has(e){return E.some(function(x){return x.ev===e;});}
+  var steps=[["Abrió la invitación","invitacion_abierta"],["Inició el diagnóstico","diagnostico_iniciado"],["Completó el diagnóstico","diagnostico_completado"],["Completó un módulo (activación)","modulo_completado"]];
+  var h='<section class="stack"><div><span class="eyebrow">Instrumentación del MVP</span><h1>Registro de eventos</h1><p class="lead">Cada acción queda registrada con hora, actor y detalle. Estos eventos alimentan los indicadores del tablero: adopción (A1), activación (A2), adopción docente (A3) y tiempo de diagnóstico.</p></div>';
+  h+='<div class="card stack"><h3>Embudo de esta sesión</h3><div class="funnel">'+steps.map(function(s){var v=has(s[1])?1:0;return '<div><span>'+s[0]+'</span><div class="bar"><i style="width:'+(v*100)+'%;background:var(--accent)"></i></div><span class="num">'+v+'</span></div>';}).join("")+'</div>'+
+     (S.result?'<p class="small">Tiempo del diagnóstico: <span class="mono">'+S.result.mins.toFixed(1).replace(".",",")+' min</span> · Alertas atendidas por docente: <span class="mono">'+Object.keys(S.alerts).length+'</span></p>':'<p class="small">Completa el flujo de estudiante para ver el embudo.</p>')+'</div>';
+  h+='<div class="tablewrap"><table><thead><tr><th>Hora</th><th>Actor</th><th>Evento</th><th>Detalle</th></tr></thead><tbody>'+
+     (E.length?E.slice().reverse().map(function(e){return '<tr><td class="mono">'+hhmm(e.t)+'</td><td>'+e.actor+'</td><td class="mono">'+e.ev+'</td><td style="white-space:normal;min-width:220px">'+esc(e.det)+'</td></tr>';}).join(""):'<tr><td colspan="4" class="small">Aún no hay eventos. Empieza en la pestaña Estudiante.</td></tr>')+
+     '</tbody></table></div><p class="small">En el piloto, los eventos se guardan con un identificador seudónimo por estudiante (Ley 21.719: minimización de datos). Esta demo no guarda nada fuera de tu navegador.</p></section>';
+  el.innerHTML=h;
+}
+function render(){ if(S.view==="est") renderEst(); else if(S.view==="doc") renderDoc(); else renderEv(); }
+render();
+})();
+</script>
