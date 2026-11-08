@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nivelatec · MVP de nivelación adaptativa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fbfbf7; --grid:#e4e9f0; --ink:#1f3a93; --ink-soft:#4a5f9e;
+  --text:#1b2233; --muted:#5d6577; --line:#d4dae4; --surface:#ffffff;
+  --mark:#ffe45c; --red:#c8102e; --red-bg:#fdecee; --green:#1e7f4f; --green-bg:#e8f5ee;
+  --amber:#a15c00; --amber-bg:#fff4dc;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#1a2220; --grid:#24302d; --ink:#9db7ff; --ink-soft:#b9c8f5;
+    --text:#eef1ea; --muted:#a8b1aa; --line:#33403c; --surface:#212b28;
+    --mark:#e8cc3a; --red:#ff8a8a; --red-bg:#3a2224; --green:#7fd6a6; --green-bg:#1f3529;
+    --amber:#ffc56b; --amber-bg:#3a3020;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#1a2220; --grid:#24302d; --ink:#9db7ff; --ink-soft:#b9c8f5;
+  --text:#eef1ea; --muted:#a8b1aa; --line:#33403c; --surface:#212b28;
+  --mark:#e8cc3a; --red:#ff8a8a; --red-bg:#3a2224; --green:#7fd6a6; --green-bg:#1f3529;
+  --amber:#ffc56b; --amber-bg:#3a3020;
+  color-scheme: dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; font-family:var(--body); font-size:17px; line-height:1.55; color:var(--text);
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:24px 24px;
+  min-height:100vh;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:2px solid var(--ink)}
+.bar-in{max-width:880px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:800;font-size:22px;color:var(--ink);letter-spacing:-.02em}
+.brand small{font-family:var(--body);font-weight:400;font-size:13px;color:var(--muted);margin-left:8px;letter-spacing:0}
+.tabs{margin-left:auto;display:flex;gap:4px}
+.tab{border:0;background:none;padding:8px 12px;border-radius:6px;cursor:pointer;color:var(--muted);font-weight:700}
+.tab[aria-selected="true"]{color:var(--ink);background:var(--grid)}
+.mode{font-size:13px;color:var(--muted);width:100%;text-align:right;margin-top:-6px}
+
+main{max-width:880px;margin:0 auto;padding:28px 20px 64px}
+h1,h2,h3{font-family:var(--display);color:var(--ink);letter-spacing:-.02em;line-height:1.15;margin:0 0 12px}
+h1{font-size:clamp(30px,6vw,46px);font-weight:800}
+h2{font-size:26px;font-weight:700}
+h3{font-size:19px;font-weight:700}
+p{margin:0 0 14px;max-width:62ch}
+.lead{font-size:19px;color:var(--text)}
+.muted{color:var(--muted)}
+.hl{background:linear-gradient(transparent 55%, var(--mark) 55%);padding:0 2px}
+
+.sheet{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--ink);padding:24px;border-radius:4px;margin:18px 0}
+.field{display:block;margin:14px 0}
+.field span{display:block;font-weight:700;margin-bottom:6px}
+.field input[type=text],.field select{width:100%;max-width:420px;padding:11px 12px;border:2px solid var(--line);border-radius:6px;background:var(--paper)}
+.check{display:flex;gap:10px;align-items:flex-start;margin:16px 0;max-width:62ch;font-size:15px;color:var(--muted)}
+.check input{margin-top:5px;width:18px;height:18px;accent-color:var(--ink)}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--ink);background:var(--ink);color:var(--surface);padding:12px 20px;border-radius:6px;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.small{padding:7px 12px;font-size:15px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+.meter{display:flex;align-items:center;gap:12px;font-size:15px;color:var(--muted);margin-bottom:18px}
+.meter .track{flex:1;height:8px;background:var(--grid);border-radius:4px;overflow:hidden}
+.meter .fill{height:100%;background:var(--ink);transition:width .3s}
+
+.topic-tag{display:inline-block;font-weight:700;font-size:14px;color:var(--ink);border:1.5px solid var(--ink);border-radius:999px;padding:2px 12px;margin-bottom:12px}
+.q{font-size:21px;line-height:1.45;margin:4px 0 20px;max-width:56ch}
+.q blockquote{margin:0 0 12px;padding:10px 14px;border-left:3px solid var(--mark);background:var(--paper);font-size:18px}
+.opts{display:grid;gap:10px;max-width:560px}
+.opt{text-align:left;border:2px solid var(--line);background:var(--surface);padding:13px 16px;border-radius:6px;cursor:pointer;font-size:18px;display:flex;gap:12px;align-items:center}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt b{font-family:var(--display);color:var(--ink);min-width:20px}
+.opt.right{border-color:var(--green);background:var(--green-bg)}
+.opt.wrong{border-color:var(--red);background:var(--red-bg);text-decoration:line-through;text-decoration-color:var(--red)}
+.opt:disabled{cursor:default}
+
+.feedback{margin-top:18px;padding:14px 16px;border-radius:6px;max-width:620px}
+.feedback.ok{background:var(--green-bg);color:var(--text);border-left:4px solid var(--green)}
+.feedback.bad{background:var(--red-bg);color:var(--text);border-left:4px solid var(--red)}
+.feedback.tip{background:var(--amber-bg);border-left:4px solid var(--amber)}
+.ai{white-space:pre-wrap}
+
+.bars{display:grid;gap:16px;margin:18px 0}
+.barrow .lbl{display:flex;justify-content:space-between;font-weight:700;margin-bottom:5px}
+.barrow .track{height:14px;background:var(--grid);border-radius:3px;position:relative;overflow:hidden}
+.barrow .fill{height:100%;border-radius:3px;transition:width .4s}
+.barrow .ghost-mark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text);opacity:.55}
+.lvl-low{background:var(--red)} .lvl-mid{background:var(--amber)} .lvl-high{background:var(--green)}
+
+.route{list-style:none;padding:0;margin:16px 0;counter-reset:r}
+.route li{counter-increment:r;display:flex;gap:14px;align-items:center;padding:12px 0;border-bottom:1px dashed var(--line)}
+.route li::before{content:counter(r);font-family:var(--display);font-weight:800;font-size:22px;color:var(--ink);width:34px;height:34px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;flex:none}
+.route li.done::before{content:"✓";color:var(--green);border-color:var(--green)}
+.route .state{margin-left:auto;font-size:14px;color:var(--muted)}
+
+.alert{border:2px solid var(--red);background:var(--red-bg);padding:16px 18px;border-radius:6px;margin:18px 0}
+.alert.calm{border-color:var(--green);background:var(--green-bg)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}
+.stat{background:var(--surface);border:1px solid var(--line);padding:14px;border-radius:4px}
+.stat .n{font-family:var(--display);font-weight:800;font-size:30px;color:var(--ink);line-height:1}
+.stat .t{font-size:14px;color:var(--muted);margin-top:6px}
+
+.tablewrap{overflow-x:auto;margin:14px 0;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:680px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font-weight:700;color:var(--ink);background:var(--paper)}
+.mini{display:flex;gap:3px;align-items:flex-end;height:22px}
+.mini i{display:block;width:12px;border-radius:2px}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:13px;font-weight:700}
+.pill.r{background:var(--red-bg);color:var(--red)} .pill.g{background:var(--green-bg);color:var(--green)} .pill.a{background:var(--amber-bg);color:var(--amber)}
+.note{font-size:14px;color:var(--muted)}
+.hidden{display:none !important}
+@media (max-width:560px){ .sheet{padding:18px} .q{font-size:19px} .opt{font-size:17px} body{font-size:16px} }
+@media (prefers-reduced-motion: reduce){ *{transition:none !important} }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="bar-in">
+    <div class="brand">Nivelatec<small>MVP de nivelación</small></div>
+    <nav class="tabs" role="tablist" aria-label="Vistas">
+      <button class="tab hidden" id="new-student" title="Registrar a otro estudiante en este equipo">+ Nuevo estudiante</button>
+      <button class="tab" role="tab" id="tab-student" aria-selected="true">Estudiante</button>
+      <button class="tab hidden" role="tab" id="tab-teacher" aria-selected="false">Panel docente</button>
+    </nav>
+    <div class="mode" id="mode">Conectando…</div>
+  </div>
+</header>
+<main id="app" aria-live="polite"></main>
+
+<script>
+/* ================= CONTENIDO ================= */
+const TOPICS = {
+  A:{name:"Álgebra básica", tip:"Lo que haces a un lado de la igualdad, hazlo también al otro. Despeja la x paso a paso."},
+  B:{name:"Fracciones y porcentajes", tip:"Para sumar o restar fracciones busca un denominador común. Un porcentaje es una fracción de 100: 15 % es 15/100."},
+  C:{name:"Funciones lineales", tip:"En y = mx + n, m es la pendiente (cuánto sube y por cada unidad de x) y n es donde la recta corta el eje y."},
+  D:{name:"Comprensión de enunciados", tip:"Marca las palabras que cambian el sentido: “o”, “y”, “salvo”, “excepto”, “al menos”, “ningún”."}
+};
+const ORDER = ["A","B","C","D"];
+// [id, tema, nivel, enunciado, opciones (la primera es la correcta), explicación]
+const BANK = [
+ ["A1a","A",1,"Si x + 5 = 12, ¿cuánto vale x?",["7","17","5","60"],"Resta 5 a ambos lados: x = 12 − 5 = 7."],
+ ["A1b","A",1,"Calcula 3 · (4 − 1).",["9","11","13","3"],"Primero el paréntesis: 4 − 1 = 3. Luego 3 · 3 = 9."],
+ ["A1c","A",1,"¿Cuánto es −6 + 10?",["4","−16","16","−4"],"Partes en −6 y avanzas 10 lugares hacia la derecha: llegas a 4."],
+ ["A2a","A",2,"Si 3x + 2 = 14, ¿cuánto vale x?",["4","16/3","5","12"],"Resta 2: 3x = 12. Divide por 3: x = 4."],
+ ["A2b","A",2,"Simplifica 2(x + 3) − x.",["x + 6","x + 3","3x + 6","2x + 5"],"Distribuye: 2x + 6 − x. Junta las x: x + 6."],
+ ["A2c","A",2,"Si 5x − 7 = 3x + 9, ¿cuánto vale x?",["8","1","16","2"],"Pasa las x a un lado y los números al otro: 5x − 3x = 9 + 7, o sea 2x = 16, x = 8."],
+ ["A3a","A",3,"Si 2(x − 3) = x + 4, ¿cuánto vale x?",["10","7","1","−2"],"Distribuye: 2x − 6 = x + 4. Resta x: x − 6 = 4. Suma 6: x = 10."],
+ ["A3b","A",3,"Resuelve x/4 + 3 = 7.",["16","1","40","10"],"Resta 3: x/4 = 4. Multiplica por 4: x = 16."],
+ ["A3c","A",3,"Si 3(2x + 1) − 4x = 11, ¿cuánto vale x?",["4","7","2","8/3"],"Distribuye: 6x + 3 − 4x = 11. Junta: 2x + 3 = 11. Entonces 2x = 8 y x = 4."],
+
+ ["B1a","B",1,"¿Cuánto es 1/2 + 1/4?",["3/4","2/6","1/6","2/4"],"1/2 es lo mismo que 2/4. Entonces 2/4 + 1/4 = 3/4."],
+ ["B1b","B",1,"¿Cuánto es el 10 % de 250?",["25","2,5","10","250"],"El 10 % es dividir por 10: 250 / 10 = 25."],
+ ["B1c","B",1,"¿Qué fracción equivale a 0,5?",["1/2","1/5","5/1","2/5"],"0,5 es la mitad de 1, o sea 1/2."],
+ ["B2a","B",2,"Un producto cuesta $20.000 y tiene 15 % de descuento. ¿Cuánto pagas?",["$17.000","$3.000","$18.500","$15.000"],"El 15 % de 20.000 es 3.000. Pagas 20.000 − 3.000 = 17.000."],
+ ["B2b","B",2,"¿Cuánto es 2/3 · 9/4?",["3/2","18/7","11/7","6/12"],"Multiplica arriba con arriba y abajo con abajo: 18/12, que simplificado es 3/2."],
+ ["B2c","B",2,"Calcula 3/5 − 1/3.",["4/15","2/2","2/15","1/5"],"Denominador común 15: 9/15 − 5/15 = 4/15."],
+ ["B3a","B",3,"Un sueldo de $600.000 sube 8 % y luego baja 5 %. ¿Cuál es el sueldo final?",["$615.600","$618.000","$630.000","$612.000"],"600.000 · 1,08 = 648.000. Luego 648.000 · 0,95 = 615.600. Los porcentajes no se restan directo porque se aplican sobre montos distintos."],
+ ["B3b","B",3,"En un curso de 40 estudiantes reprobó el 30 %. Si 3 de ellos aprueban en el examen de repetición, ¿qué porcentaje reprobó al final?",["22,5 %","27 %","25 %","7,5 %"],"30 % de 40 son 12. Si 3 aprueban, quedan 9. 9 de 40 es 22,5 %."],
+ ["B3c","B",3,"Calcula (3/4) ÷ (9/8).",["2/3","27/32","3/2","12/9"],"Dividir es multiplicar por el inverso: 3/4 · 8/9 = 24/36 = 2/3."],
+
+ ["C1a","C",1,"Si f(x) = 2x + 1, ¿cuánto es f(3)?",["7","6","9","5"],"Reemplaza x por 3: 2 · 3 + 1 = 7."],
+ ["C1b","C",1,"En la recta y = 3x, si x = 4, ¿cuánto vale y?",["12","7","1","34"],"y = 3 · 4 = 12."],
+ ["C1c","C",1,"¿Cuál es la pendiente de y = 5x − 2?",["5","−2","3","2/5"],"La pendiente es el número que multiplica a x: 5."],
+ ["C2a","C",2,"¿Qué punto está en la recta y = 2x − 4?",["(3, 2)","(2, 3)","(0, 4)","(1, 2)"],"Prueba x = 3: 2 · 3 − 4 = 2. Coincide con y = 2."],
+ ["C2b","C",2,"Una recta pasa por (0, 1) y (2, 5). ¿Cuál es su pendiente?",["2","4","3","1/2"],"Pendiente = cambio en y / cambio en x = (5 − 1) / (2 − 0) = 2."],
+ ["C2c","C",2,"Un taxi cobra $500 de bajada de bandera y $300 por kilómetro. ¿Qué función da el costo C según los kilómetros x?",["C = 300x + 500","C = 500x + 300","C = 800x","C = 300 + x"],"Lo que cambia con cada km (300) multiplica a x; lo fijo (500) se suma."],
+ ["C3a","C",3,"Si f(x) = 3x − 5 y f(a) = 10, ¿cuánto vale a?",["5","25","15","5/3"],"3a − 5 = 10, entonces 3a = 15 y a = 5."],
+ ["C3b","C",3,"Plan A: $8.000 fijos más $50 por minuto. Plan B: $100 por minuto. ¿Desde cuántos minutos conviene el plan A?",["Más de 160","Más de 80","Más de 1.600","Nunca conviene"],"A es más barato cuando 8.000 + 50m < 100m, o sea 8.000 < 50m, m > 160."],
+ ["C3c","C",3,"¿Cuál es la recta que pasa por (1, 3) con pendiente −2?",["y = −2x + 5","y = −2x + 3","y = 2x + 1","y = −2x + 1"],"y = −2x + n. Con el punto (1, 3): 3 = −2 + n, así que n = 5."],
+
+ ["D1a","D",1,"<blockquote>El técnico debe revisar el equipo cada 15 días, salvo que el indicador marque rojo, en cuyo caso la revisión es inmediata.</blockquote>¿Cuándo se revisa si el indicador está rojo?",["De inmediato","Cada 15 días","Nunca","Después de 15 días"],"“Salvo que” introduce la excepción: con indicador rojo la revisión es inmediata."],
+ ["D1b","D",1,"<blockquote>Para inscribir la asignatura, el estudiante debe tener aprobado el ramo previo o contar con autorización de la jefatura de carrera.</blockquote>¿Qué basta para inscribir?",["Cumplir cualquiera de las dos condiciones","Cumplir ambas a la vez","Solo el ramo previo","Solo la autorización"],"La palabra “o” indica que basta con una de las dos condiciones."],
+ ["D1c","D",1,"<blockquote>La mezcla debe reposar al menos 2 horas antes de usarse.</blockquote>¿Se puede usar a las 3 horas?",["Sí","No","Solo si se agita","No se indica"],"“Al menos 2 horas” significa 2 horas o más. 3 horas cumple."],
+ ["D2a","D",2,"<blockquote>El 60 % de los encuestados prefiere clases presenciales; de ellos, la mitad trabaja.</blockquote>¿Qué porcentaje del total prefiere clases presenciales y además trabaja?",["30 %","60 %","50 %","10 %"],"“De ellos” se refiere al 60 %. La mitad de 60 % es 30 % del total."],
+ ["D2b","D",2,"<blockquote>La garantía cubre fallas de fábrica durante 12 meses, excepto daños por mal uso.</blockquote>Un equipo falla a los 8 meses porque se cayó. ¿Lo cubre la garantía?",["No, es daño por mal uso","Sí, está dentro de los 12 meses","Sí, siempre","No se puede saber"],"Aunque esté dentro del plazo, la caída es mal uso y queda en la excepción."],
+ ["D2c","D",2,"<blockquote>Ningún estudiante que haya faltado a más del 25 % de las clases puede rendir el examen.</blockquote>Ana faltó al 20 %. ¿Qué se puede afirmar?",["Esta regla no le impide rendir","Está obligada a rendir","No puede rendir","Faltó demasiado"],"La regla solo prohíbe a quienes faltaron más del 25 %. Ana no está en ese grupo."],
+ ["D3a","D",3,"<blockquote>Si la temperatura supera los 40 °C, la máquina se detiene; si se detiene dos veces en un turno, se llama al supervisor.</blockquote>En un turno la temperatura superó los 40 °C tres veces. ¿Qué ocurre?",["La máquina se detuvo y se llamó al supervisor","Solo se detuvo la máquina","Solo se llamó al supervisor","No pasa nada"],"Cada vez que supera 40 °C se detiene (3 veces). Como se detuvo 2 o más veces, también se llama al supervisor."],
+ ["D3b","D",3,"<blockquote>No es cierto que todos los ramos de primer año tengan examen.</blockquote>¿Qué significa esta frase?",["Al menos un ramo de primer año no tiene examen","Ningún ramo tiene examen","Todos tienen examen","La mitad tiene examen"],"Negar “todos tienen” no es decir “ninguno tiene”: basta con que al menos uno no tenga."],
+ ["D3c","D",3,"<blockquote>El descuento aplica a compras sobre $50.000 y no es acumulable con otras promociones.</blockquote>Una compra de $60.000 ya tiene otra promoción. ¿Aplica el descuento?",["No, porque no es acumulable","Sí, porque supera $50.000","Sí, y ambas se suman","Depende del vendedor"],"Cumple el monto, pero la segunda condición lo impide: no se puede sumar a otra promoción."]
+].map(([id,t,l,q,o,e])=>({id,t,l,q,o,e}));
+
+const DIAG_LEN = 12;            // 3 por tema
+const MASTERY = 75;             // % para considerar un tema nivelado
+const KEY_LOCAL = "nivelatec-mvp-v1";
+const KEY_CUR = "nivelatec-mvp-actual";
+let isOwnerFlag=false, ownerUid=null, confirmNew=0;
+
+/* ================= ESTADO Y PERSISTENCIA ================= */
+let db=null, user=null, sample=null, downloads=null;
+let myId=null, isTeacher=false, cloud=false;
+let S=null;                     // sesión del estudiante actual
+let view="student", screen="welcome";
+let current=null;               // pregunta en curso
+let qStart=0, answered=false, usedHintThisQ=false;
+let teacherRows=[], unsubTeacher=null;
+let saving=Promise.resolve();
+
+const $app=document.getElementById("app");
+const $mode=document.getElementById("mode");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function newSession(alias,carrera){
+  return {alias,carrera,consent:true,createdAt:Date.now(),updatedAt:Date.now(),
+    diag:{done:false,step:0,level:{A:2,B:2,C:2,D:2},points:{A:0,B:0,C:0,D:0},used:[]},
+    diagScores:null, mastery:null, practiceCount:0, practiceCorrect:0, hintsUsed:0, aiUsed:0,
+    timeMs:0, wrongStreak:{A:0,B:0,C:0,D:0}, usedPractice:[], currentTopic:null,
+    alert:{active:false,reason:"",at:0,attended:false}, events:[]};
+}
+function loadLocalAll(){ try{ return JSON.parse(localStorage.getItem(KEY_LOCAL))||{sessions:{},me:null}; }catch(e){ return {sessions:{},me:null}; } }
+function saveLocalAll(o){ try{ localStorage.setItem(KEY_LOCAL, JSON.stringify(o)); }catch(e){} }
+
+function persist(){
+  if(!S) return;
+  S.updatedAt=Date.now();
+  if(S.events.length>80) S.events=S.events.slice(-80);
+  const snapshot=JSON.parse(JSON.stringify(S));
+  if(cloud && db && myId){
+    saving=saving.then(()=>db.doc("sesiones/"+myId).set(snapshot)).catch(err=>{
+      console.warn("No se pudo guardar en la nube", err);
+      $mode.textContent="No se pudo guardar el último avance. Revisa tu conexión.";
+    });
+  } else {
+    const all=loadLocalAll(); all.sessions[myId]=snapshot; all.me=myId; saveLocalAll(all);
+  }
+}
+
+/* ================= LÓGICA ADAPTATIVA ================= */
+function pick(topic, level, usedList){
+  let pool=BANK.filter(q=>q.t===topic && q.l===level && !usedList.includes(q.id));
+  if(!pool.length) pool=BANK.filter(q=>q.t===topic && !usedList.includes(q.id));
+  if(!pool.length) pool=BANK.filter(q=>q.t===topic && q.l===level);
+  if(!pool.length) pool=BANK.filter(q=>q.t===topic);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+function shuffledOptions(q){
+  const arr=q.o.map((text,i)=>({text,correct:i===0}));
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  return arr;
+}
+function levelClass(v){ return v<40?"lvl-low":(v<MASTERY?"lvl-mid":"lvl-high"); }
+function overall(m){ return Math.round(ORDER.reduce((a,t)=>a+m[t],0)/ORDER.length); }
+function routeOrder(){ return ORDER.slice().sort((a,b)=>S.mastery[a]-S.mastery[b]); }
+function nextTopic(){ return routeOrder().find(t=>S.mastery[t]<MASTERY) || null; }
+
+function logEvent(e){ S.events.push(Object.assign({at:Date.now()},e)); }
+
+function raiseAlert(reason){
+  if(S.alert.active && !S.alert.attended) return;
+  S.alert={active:true,reason,at:Date.now(),attended:false};
+}
+function checkDiagRisk(){
+  const ov=overall(S.diagScores);
+  const low=ORDER.filter(t=>S.diagScores[t]<25).map(t=>TOPICS[t].name);
+  if(ov<45) raiseAlert(`Dominio general bajo en el diagnóstico (${ov} %).`);
+  else if(low.length) raiseAlert(`Brecha alta en el diagnóstico: ${low.join(", ")}.`);
+}
+
+/* ================= VISTAS ESTUDIANTE ================= */
+function render(){
+  document.getElementById("tab-student").setAttribute("aria-selected", view==="student");
+  document.getElementById("tab-teacher").setAttribute("aria-selected", view==="teacher");
+  document.getElementById("new-student").classList.toggle("hidden", !(view==="student" && S && canMultiStudent()));
+  if(view==="teacher") return renderTeacher();
+  if(!S){ screen="welcome"; return renderWelcome(); }
+  ({welcome:renderWelcome, diag:renderDiag, result:renderResult, practice:renderPractice, progress:renderProgress})[screen]();
+  window.scrollTo({top:0});
+}
+
+function renderWelcome(){
+  $app.innerHTML=`
+    <h1>Partamos por saber dónde estás</h1>
+    <p class="lead">Son ${DIAG_LEN} preguntas cortas de matemáticas y comprensión de enunciados. La dificultad se ajusta a tus respuestas, así que no tienes que saberlo todo. Toma unos 10 minutos.</p>
+    <p class="muted">Con el resultado armamos una ruta de ejercicios solo para ti, empezando por lo que más te cuesta.</p>
+    <div class="sheet">
+      <label class="field"><span>Tu alias</span>
+        <input type="text" id="alias" maxlength="24" placeholder="Por ejemplo: diego_19" autocomplete="off"></label>
+      <p class="note">Usa un alias, no tu nombre ni tu RUT.</p>
+      <label class="field"><span>Tu carrera</span>
+        <select id="carrera">
+          <option value="">Elige una opción</option>
+          <option>Técnico en Administración</option><option>Técnico en Informática</option>
+          <option>Técnico en Mecánica</option><option>Técnico en Enfermería</option>
+          <option>Técnico en Construcción</option><option>Otra</option>
+        </select></label>
+      <label class="check"><input type="checkbox" id="consent">
+        <span>Entiendo que mis respuestas se guardan con mi alias y que solo el equipo docente las ve, para apoyarme a tiempo si lo necesito.</span></label>
+      <button class="btn" id="start" disabled>Comenzar diagnóstico</button>
+    </div>`;
+  const a=document.getElementById("alias"), c=document.getElementById("carrera"), k=document.getElementById("consent"), b=document.getElementById("start");
+  const upd=()=>{ b.disabled=!(a.value.trim().length>=2 && c.value && k.checked); };
+  [a,c,k].forEach(el=>el.addEventListener("input",upd)); k.addEventListener("change",upd);
+  b.addEventListener("click",()=>{
+    S=newSession(a.value.trim().slice(0,24), c.value);
+    logEvent({type:"start"}); persist();
+    screen="diag"; current=null; render();
+  });
+}
+
+function renderDiag(){
+  const d=S.diag;
+  if(d.step>=DIAG_LEN) return finishDiag();
+  const topic=ORDER[d.step % 4];
+  if(!current || current.phase!=="diag" || current.step!==d.step){
+    const q=pick(topic, d.level[topic], d.used);
+    current={phase:"diag",step:d.step,q,opts:shuffledOptions(q)};
+    qStart=Date.now();
+  }
+  const {q,opts}=current;
+  $app.innerHTML=`
+    <div class="meter"><span>Pregunta ${d.step+1} de ${DIAG_LEN}</span>
+      <div class="track"><div class="fill" style="width:${(d.step/DIAG_LEN)*100}%"></div></div></div>
+    <span class="topic-tag">${TOPICS[topic].name}</span>
+    <div class="q">${q.q}</div>
+    <div class="opts">${opts.map((o,i)=>`<button class="opt" data-i="${i}"><b>${"ABCD"[i]}</b><span>${esc(o.text)}</span></button>`).join("")}</div>
+    <p class="note" style="margin-top:18px">En el diagnóstico no verás si acertaste. Responde lo que creas; si no sabes, elige la que te parezca más razonable.</p>`;
+  $app.querySelectorAll(".opt").forEach(btn=>btn.addEventListener("click",()=>{
+    const ok=opts[+btn.dataset.i].correct, ms=Date.now()-qStart;
+    d.used.push(q.id);
+    if(ok){ d.points[topic]+=q.l; d.level[topic]=Math.min(3,q.l+1); }
+    else { d.level[topic]=Math.max(1,q.l-1); }
+    S.timeMs+=ms;
+    logEvent({type:"answer",phase:"diag",topic,level:q.l,qid:q.id,correct:ok,ms});
+    d.step++; current=null; persist(); render();
+  }));
+}
+
+function finishDiag(){
+  const d=S.diag; d.done=true;
+  // puntaje máximo por tema con 3 preguntas partiendo en nivel 2: 2 + 3 + 3 = 8
+  S.diagScores={}; ORDER.forEach(t=>S.diagScores[t]=Math.round(Math.min(1,d.points[t]/8)*100));
+  S.mastery=Object.assign({},S.diagScores);
+  logEvent({type:"diag_done",scores:S.diagScores});
+  checkDiagRisk(); persist();
+  screen="result"; render();
+}
+
+function barsHTML(m, base){
+  return `<div class="bars">${ORDER.map(t=>`
+    <div class="barrow"><div class="lbl"><span>${TOPICS[t].name}</span><span>${m[t]} %</span></div>
+      <div class="track"><div class="fill ${levelClass(m[t])}" style="width:${Math.max(3,m[t])}%"></div>
+      ${base?`<div class="ghost-mark" style="left:${base[t]}%" title="Diagnóstico: ${base[t]} %"></div>`:""}</div></div>`).join("")}</div>`;
+}
+
+function renderResult(){
+  const ov=overall(S.diagScores);
+  const route=routeOrder();
+  $app.innerHTML=`
+    <h1>Tu punto de partida</h1>
+    <p class="lead">Tu dominio general es <span class="hl">${ov} %</span>. No es una nota: es el mapa para saber por dónde empezar.</p>
+    ${barsHTML(S.diagScores)}
+    <div class="sheet">
+      <h2>Tu ruta</h2>
+      <p class="muted">Ordenada desde lo que más te cuesta. Un tema queda nivelado cuando llegas a ${MASTERY} %.</p>
+      <ol class="route">${route.map(t=>`<li class="${S.mastery[t]>=MASTERY?"done":""}"><span>${TOPICS[t].name}</span><span class="state">${S.mastery[t]>=MASTERY?"Nivelado":S.mastery[t]+" %"}</span></li>`).join("")}</ol>
+      <div class="row">
+        <button class="btn" id="go">${nextTopic()?"Empezar mi ruta":"Practicar igual"}</button>
+        <button class="btn ghost" id="prog">Ver mi progreso</button>
+      </div>
+    </div>`;
+  document.getElementById("go").onclick=()=>{ S.currentTopic=nextTopic()||route[0]; current=null; screen="practice"; render(); };
+  document.getElementById("prog").onclick=()=>{ screen="progress"; render(); };
+}
+
+function practiceLevel(topic){ const m=S.mastery[topic]; return m<40?1:(m<70?2:3); }
+
+function renderPractice(){
+  const topic=S.currentTopic||nextTopic()||ORDER[0]; S.currentTopic=topic;
+  if(!current || current.phase!=="practice"){
+    const q=pick(topic, practiceLevel(topic), S.usedPractice.concat(S.diag.used));
+    current={phase:"practice",q,opts:shuffledOptions(q),chosen:null};
+    qStart=Date.now(); answered=false; usedHintThisQ=false;
+  }
+  const {q,opts}=current;
+  const m=S.mastery[topic];
+  $app.innerHTML=`
+    <div class="row" style="justify-content:space-between;margin-bottom:10px">
+      <label class="note">Tema
+        <select id="topicSel" style="margin-left:6px;padding:4px 6px;border:1px solid var(--line);border-radius:4px;background:var(--surface)">
+          ${routeOrder().map(t=>`<option value="${t}" ${t===topic?"selected":""}>${TOPICS[t].name}</option>`).join("")}
+        </select></label>
+      <button class="btn ghost small" id="toProg">Mi progreso</button>
+    </div>
+    <div class="meter"><span>${TOPICS[topic].name}: ${m} %</span>
+      <div class="track"><div class="fill" style="width:${m}%"></div></div><span>meta ${MASTERY} %</span></div>
+    <div class="q">${q.q}</div>
+    <div class="opts">${opts.map((o,i)=>{
+      let cls=""; if(answered){ if(o.correct) cls="right"; else if(current.chosen===i) cls="wrong"; }
+      return `<button class="opt ${cls}" data-i="${i}" ${answered?"disabled":""}><b>${"ABCD"[i]}</b><span>${esc(o.text)}</span></button>`;}).join("")}</div>
+    <div id="fb"></div>
+    <div class="row" style="margin-top:18px" id="actions"></div>`;
+  document.getElementById("topicSel").onchange=e=>{ S.currentTopic=e.target.value; current=null; persist(); render(); };
+  document.getElementById("toProg").onclick=()=>{ screen="progress"; render(); };
+
+  const fb=document.getElementById("fb"), act=document.getElementById("actions");
+  if(!answered){
+    act.innerHTML=`<button class="btn ghost small" id="hint">Necesito una pista</button>`;
+    document.getElementById("hint").onclick=()=>{
+      if(!usedHintThisQ){ usedHintThisQ=true; S.hintsUsed++; logEvent({type:"hint",topic,qid:q.id}); persist(); }
+      fb.innerHTML=`<div class="feedback tip">${esc(TOPICS[topic].tip)}</div>`;
+    };
+    $app.querySelectorAll(".opt").forEach(btn=>btn.addEventListener("click",()=>answerPractice(+btn.dataset.i)));
+  } else {
+    const ok=opts[current.chosen].correct;
+    fb.innerHTML= ok
+      ? `<div class="feedback ok"><strong>Correcto.</strong> ${esc(q.e)}</div>`
+      : `<div class="feedback bad"><strong>Todavía no.</strong> ${esc(q.e)}<div id="aiBox"></div></div>`;
+    act.innerHTML=`<button class="btn" id="next">Siguiente ejercicio</button>
+      ${ok?"":`<button class="btn ghost" id="aiBtn">Explícamelo de otra forma</button>`}`;
+    document.getElementById("next").onclick=()=>{
+      const nt=S.mastery[topic]>=MASTERY ? (nextTopic()||topic) : topic;
+      S.currentTopic=nt; current=null; persist(); render();
+    };
+    const aiBtn=document.getElementById("aiBtn"); if(aiBtn) aiBtn.onclick=()=>explainWithAI(q, opts[current.chosen].text, aiBtn);
+    if(S.mastery[topic]>=MASTERY && !current.celebrated){
+      current.celebrated=true;
+      fb.insertAdjacentHTML("beforeend",`<div class="feedback ok"><strong>Nivelaste ${esc(TOPICS[topic].name)}.</strong> ${nextTopic()?"El siguiente ejercicio será del próximo tema de tu ruta.":"Completaste toda tu ruta."}</div>`);
+    }
+  }
+}
+
+function answerPractice(i){
+  const {q,opts}=current, topic=S.currentTopic;
+  const ok=opts[i].correct, ms=Date.now()-qStart;
+  current.chosen=i; answered=true;
+  S.usedPractice.push(q.id); if(S.usedPractice.length>60) S.usedPractice=S.usedPractice.slice(-60);
+  S.practiceCount++; if(ok) S.practiceCorrect++;
+  S.timeMs+=ms;
+  const delta= ok ? 6+2*q.l : -4;
+  S.mastery[topic]=Math.max(0,Math.min(100,S.mastery[topic]+delta));
+  if(ok) S.wrongStreak[topic]=0; else S.wrongStreak[topic]++;
+  if(S.wrongStreak[topic]>=3) raiseAlert(`3 errores seguidos en ${TOPICS[topic].name}.`);
+  logEvent({type:"answer",phase:"practice",topic,level:q.l,qid:q.id,correct:ok,ms,hint:usedHintThisQ});
+  persist(); renderPractice();
+}
+
+async function explainWithAI(q, chosenText, btn){
+  const box=document.getElementById("aiBox");
+  if(!sample){ box.innerHTML=`<p class="note" style="margin-top:10px">La explicación con IA no está disponible en esta vista. Usa la explicación de arriba o pídele ayuda a tu docente.</p>`; btn.disabled=true; return; }
+  btn.disabled=true; S.aiUsed++; logEvent({type:"ai_help",qid:q.id}); persist();
+  box.innerHTML=`<p class="ai" style="margin-top:12px">Pensando…</p>`;
+  const p=box.querySelector(".ai");
+  const plain=q.q.replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim();
+  const prompt=`Eres tutor de nivelación para estudiantes de primer año de un centro de formación técnica en Chile. Un estudiante respondió mal este ejercicio.
+Ejercicio: ${plain}
+Respuesta correcta: ${q.o[0]}
+Respuesta del estudiante: ${chosenText}
+Explica en máximo 5 oraciones cortas, en español de Chile, con tono cercano y sin sermones: primero qué error probable cometió, luego el procedimiento correcto paso a paso. No uses formato markdown ni listas.`;
+  try{
+    const r=await sample(prompt,{modelTier:"quick", onText:({text})=>{ p.textContent=text; }});
+    p.textContent=r.text;
+  }catch(e){
+    p.textContent = e && e.code==="rate_limited" ? "Hay muchas consultas en este momento. Intenta en un minuto." : "No se pudo generar la explicación. Usa la explicación de arriba.";
+  }
+}
+
+function renderProgress(){
+  const acc=S.practiceCount? Math.round(S.practiceCorrect/S.practiceCount*100):0;
+  const mins=Math.max(1,Math.round(S.timeMs/60000));
+  const al=S.alert;
+  $app.innerHTML=`
+    <h1>Mi progreso</h1>
+    <p class="lead">Las barras muestran tu dominio actual. La línea fina marca dónde partiste en el diagnóstico.</p>
+    ${barsHTML(S.mastery, S.diagScores)}
+    <div class="stats">
+      <div class="stat"><div class="n">${S.practiceCount}</div><div class="t">ejercicios resueltos</div></div>
+      <div class="stat"><div class="n">${acc} %</div><div class="t">de aciertos en práctica</div></div>
+      <div class="stat"><div class="n">${ORDER.filter(t=>S.mastery[t]>=MASTERY).length} de 4</div><div class="t">temas nivelados</div></div>
+      <div class="stat"><div class="n">${mins} min</div><div class="t">de estudio registrado</div></div>
+    </div>
+    ${al.active ? (al.attended
+      ? `<div class="alert calm"><h3>Tu docente ya revisó tu caso</h3><p style="margin:0">Si todavía te cuesta, pregúntale directamente en clases o por el canal del curso.</p></div>`
+      : `<div class="alert"><h3>Avisamos a tu docente</h3><p style="margin:0">${esc(al.reason)} Esto no es una sanción: la idea es que recibas apoyo antes de la prueba.</p></div>`)
+      : ""}
+    <div class="row"><button class="btn" id="back">Seguir practicando</button><button class="btn ghost" id="route">Ver mi ruta</button></div>`;
+  document.getElementById("back").onclick=()=>{ current=null; screen="practice"; render(); };
+  document.getElementById("route").onclick=()=>{ screen="result"; render(); };
+}
+
+/* ================= PANEL DOCENTE ================= */
+function teacherStats(rows){
+  const n=rows.length;
+  const diag=rows.filter(r=>r.diag&&r.diag.done).length;
+  const started=rows.filter(r=>r.practiceCount>0).length;
+  const ex=rows.reduce((a,r)=>a+(r.practiceCount||0),0);
+  const cor=rows.reduce((a,r)=>a+(r.practiceCorrect||0),0);
+  const ai=rows.filter(r=>r.aiUsed>0).length;
+  const alerts=rows.filter(r=>r.alert&&r.alert.active&&!r.alert.attended).length;
+  const gains=rows.filter(r=>r.diagScores&&r.mastery).map(r=>overall(r.mastery)-overall(r.diagScores));
+  const pct=(a,b)=>b?Math.round(a/b*100):0;
+  return {n,diag,started,ex,cor,ai,alerts,
+    pDiag:pct(diag,n),pStart:pct(started,diag),avgEx:started?(ex/started).toFixed(1):"0",acc:pct(cor,ex),pAI:pct(ai,started),
+    gain:gains.length?Math.round(gains.reduce((a,b)=>a+b,0)/gains.length):0};
+}
+
+function renderTeacher(){
+  const rows=teacherRows.slice().sort((a,b)=>{
+    const aa=a.alert&&a.alert.active&&!a.alert.attended?1:0, bb=b.alert&&b.alert.active&&!b.alert.attended?1:0;
+    return bb-aa || (b.updatedAt||0)-(a.updatedAt||0);
+  });
+  const st=teacherStats(rows);
+  $app.innerHTML=`
+    <h1>Panel docente</h1>
+    <p class="lead">Estado del curso en tiempo real. Los estudiantes con alerta aparecen primero.</p>
+    ${cloud?"":`<p class="note">Modo demostración: este panel muestra solo las sesiones hechas en este navegador. Al abrir el MVP publicado con una sesión iniciada, verás a todo el curso.</p>`}
+    <div class="stats">
+      <div class="stat"><div class="n">${st.n}</div><div class="t">estudiantes registrados</div></div>
+      <div class="stat"><div class="n">${st.pDiag} %</div><div class="t">completó el diagnóstico</div></div>
+      <div class="stat"><div class="n">${st.pStart} %</div><div class="t">inició su ruta tras el diagnóstico</div></div>
+      <div class="stat"><div class="n">${st.avgEx}</div><div class="t">ejercicios por estudiante activo</div></div>
+      <div class="stat"><div class="n">${st.acc} %</div><div class="t">aciertos en práctica</div></div>
+      <div class="stat"><div class="n">${st.gain>0?"+":""}${st.gain} pts</div><div class="t">avance promedio sobre el diagnóstico</div></div>
+      <div class="stat"><div class="n">${st.pAI} %</div><div class="t">usó la explicación con IA</div></div>
+      <div class="stat"><div class="n" style="color:${st.alerts?"var(--red)":"var(--green)"}">${st.alerts}</div><div class="t">alertas sin atender</div></div>
+    </div>
+    <div class="row" style="justify-content:space-between">
+      <h2 style="margin:12px 0 0">Estudiantes</h2>
+      <button class="btn ghost small" id="csv" ${rows.length?"":"disabled"}>Descargar datos (CSV)</button>
+    </div>
+    ${rows.length? `<div class="tablewrap"><table>
+      <thead><tr><th>Alias</th><th>Carrera</th><th title="Álgebra, fracciones, funciones y lectura">Dominio por tema</th><th>General</th><th>Ejercicios</th><th>Aciertos</th><th>Alerta</th></tr></thead>
+      <tbody>${rows.map(r=>{
+        const m=r.mastery||{A:0,B:0,C:0,D:0}, done=r.diag&&r.diag.done;
+        const al=r.alert||{};
+        const alertCell= al.active ? (al.attended?`<span class="pill g">Atendida</span>`
+          : `<span class="pill r" title="${esc(al.reason)}">Riesgo</span> <button class="btn ghost small" data-attend="${esc(r._id)}">Marcar atendida</button><div class="note">${esc(al.reason)}</div>`)
+          : (done?`<span class="pill g">Sin alerta</span>`:`<span class="pill a">Diagnóstico en curso</span>`);
+        return `<tr>
+          <td><strong>${esc(r.alias||"Sin alias")}</strong></td><td>${esc(r.carrera||"")}</td>
+          <td>${done?`<div class="mini">${ORDER.map(t=>`<i class="${levelClass(m[t])}" style="height:${Math.max(3,m[t]*0.22)}px" title="${TOPICS[t].name}: ${m[t]} %"></i>`).join("")}</div>`:"–"}</td>
+          <td>${done?overall(m)+" %":"–"}</td>
+          <td>${r.practiceCount||0}</td>
+          <td>${r.practiceCount?Math.round((r.practiceCorrect||0)/r.practiceCount*100)+" %":"–"}</td>
+          <td>${alertCell}</td></tr>`;}).join("")}</tbody></table></div>`
+      : `<div class="sheet"><h3>Todavía no hay estudiantes</h3><p style="margin:0">Comparte el enlace del MVP con tu curso. Cada estudiante que complete el diagnóstico aparecerá aquí automáticamente.</p></div>`}
+    <p class="note">Reglas de alerta: dominio general bajo 45 % o algún tema bajo 25 % en el diagnóstico, o 3 errores seguidos en un mismo tema durante la práctica.</p>`;
+  $app.querySelectorAll("[data-attend]").forEach(b=>b.onclick=()=>attend(b.dataset.attend, b));
+  const csv=document.getElementById("csv"); if(csv) csv.onclick=()=>exportCSV(rows, csv);
+}
+
+async function attend(id, btn){
+  btn.disabled=true;
+  if(cloud){
+    try{ const ref=db.doc("sesiones/"+id); const snap=await ref.get(); if(snap.exists){ const d=snap.data(); d.alert=Object.assign({},d.alert,{attended:true}); await ref.set(d);} }
+    catch(e){ btn.disabled=false; $mode.textContent="No se pudo marcar la alerta. Intenta de nuevo."; }
+  } else {
+    const all=loadLocalAll(); if(all.sessions[id]){ all.sessions[id].alert.attended=true; saveLocalAll(all); }
+    if(S && id===myId) S.alert.attended=true;
+    loadLocalTeacher(); renderTeacher();
+  }
+}
+
+function canMultiStudent(){ return !cloud || isOwnerFlag; }
+
+async function newStudentSession(){
+  const b=document.getElementById("new-student");
+  if(!canMultiStudent()){ $mode.textContent="Solo el dueño del MVP puede registrar varios estudiantes en un mismo equipo."; return; }
+  if(Date.now()-confirmNew>4000){ confirmNew=Date.now(); b.textContent="¿Seguro? Toca otra vez"; setTimeout(()=>{ b.textContent="+ Nuevo estudiante"; },4000); return; }
+  confirmNew=0; b.textContent="+ Nuevo estudiante";
+  try{ await saving; }catch(e){}
+  const rand=Math.random().toString(36).slice(2,8);
+  if(cloud){ myId=ownerUid+"-"+rand; }
+  else { myId="local-"+rand; const all=loadLocalAll(); all.me=myId; saveLocalAll(all); }
+  try{ localStorage.setItem(KEY_CUR, myId); }catch(e){}
+  S=null; current=null; screen="welcome"; view="student";
+  $mode.textContent="Listo: el siguiente estudiante puede comenzar. Los anteriores quedaron guardados.";
+  render();
+}
+
+function showCsvText(data, btn){
+  let box=document.getElementById("csvBox");
+  if(!box){ box=document.createElement("div"); box.id="csvBox"; box.className="sheet"; btn.closest(".row").insertAdjacentElement("afterend", box); }
+  box.innerHTML=`<h3>Datos en formato CSV</h3><p class="note">Si la descarga no comenzó, copia este texto y pégalo en un archivo nuevo llamado nivelatec.csv, o directamente en Excel (Datos, Desde texto).</p><textarea id="csvText" readonly style="width:100%;height:160px;font-family:monospace;font-size:12px;border:1px solid var(--line);border-radius:4px;background:var(--paper);color:var(--text);padding:8px"></textarea><div class="row" style="margin-top:8px"><button class="btn ghost small" id="csvCopy">Copiar texto</button></div>`;
+  const ta=document.getElementById("csvText"); ta.value=data.replace(/^\ufeff/,"");
+  document.getElementById("csvCopy").onclick=async()=>{
+    ta.select();
+    try{ await navigator.clipboard.writeText(ta.value); $mode.textContent="CSV copiado."; }
+    catch(e){ try{ document.execCommand("copy"); $mode.textContent="CSV copiado."; }catch(e2){ $mode.textContent="Selecciona el texto y cópialo manualmente (Ctrl + C)."; } }
+  };
+}
+
+function browserDownload(data){
+  try{
+    const blob=new Blob([data],{type:"text/csv;charset=utf-8"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="nivelatec_resultados_mvp.csv";
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+  }catch(e){}
+}
+
+async function exportCSV(rows, btn){
+  const head=["alias","carrera","diagnostico_completo","diag_algebra","diag_fracciones","diag_funciones","diag_lectura","actual_algebra","actual_fracciones","actual_funciones","actual_lectura","ejercicios","aciertos","pistas","ayuda_ia","minutos","alerta","motivo_alerta","alerta_atendida","ultima_actividad"];
+  const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+  const lines=[head.join(",")].concat(rows.map(r=>{
+    const d=r.diagScores||{}, m=r.mastery||{}, al=r.alert||{};
+    return [r.alias,r.carrera,r.diag&&r.diag.done?"si":"no",d.A,d.B,d.C,d.D,m.A,m.B,m.C,m.D,r.practiceCount||0,r.practiceCorrect||0,r.hintsUsed||0,r.aiUsed||0,Math.round((r.timeMs||0)/60000),al.active?"si":"no",al.reason||"",al.attended?"si":"no",r.updatedAt?new Date(r.updatedAt).toISOString():""].map(q).join(",");
+  }));
+  const data="\ufeff"+lines.join("\n");
+  if(downloads){
+    try{ await downloads.save({filename:"nivelatec_resultados_mvp.csv", data}); return; }
+    catch(e){ if(e&&e.code==="declined") return; }
+  } else {
+    browserDownload(data);
+  }
+  showCsvText(data, btn);
+}
+
+function loadLocalTeacher(){
+  const all=loadLocalAll();
+  teacherRows=Object.entries(all.sessions).map(([id,s])=>Object.assign({_id:id},s));
+}
+
+/* ================= ARRANQUE ================= */
+document.getElementById("tab-student").onclick=()=>{ view="student"; render(); };
+document.getElementById("new-student").onclick=newStudentSession;
+document.getElementById("tab-teacher").onclick=()=>{
+  view="teacher";
+  if(!cloud) loadLocalTeacher();
+  render();
+};
+
+function startLocal(){
+  cloud=false;
+  $mode.textContent="Modo demostración: los datos se guardan en este navegador.";
+  const all=loadLocalAll();
+  myId=all.me || ("local-"+Math.random().toString(36).slice(2,10));
+  if(all.sessions[myId]) S=all.sessions[myId];
+  document.getElementById("tab-teacher").classList.remove("hidden");
+  resumeScreen(); render();
+}
+
+function resumeScreen(){
+  if(!S){ screen="welcome"; return; }
+  screen = S.diag.done ? (S.practiceCount?"progress":"result") : "diag";
+}
+
+render();
+(async function init(){
+  if(!window.claude || !window.claude.use){ startLocal(); return; }
+  const [dbNs,userNs,sampleNs,dlNs]=await Promise.all([
+    window.claude.use("db"), window.claude.use("user"), window.claude.use("sample"), window.claude.use("downloads")
+  ]);
+  sample=sampleNs; downloads=dlNs; user=userNs;
+  if(!dbNs || !userNs){ startLocal(); return; }
+  db=dbNs;
+  try{
+    myId=await user.id();
+    isOwnerFlag = await user.isOwner();
+    isTeacher = isOwnerFlag || (await user.canEdit());
+    ownerUid = myId;
+    if(isOwnerFlag){ try{ const cur=localStorage.getItem(KEY_CUR); if(cur && cur.indexOf(myId)===0) myId=cur; }catch(e){} }
+  }catch(e){ startLocal(); return; }
+  if(!myId){ startLocal(); return; }
+  cloud=true;
+  $mode.textContent = isTeacher ? "Conectado como docente." : "Tu avance se guarda automáticamente.";
+  if(isTeacher) document.getElementById("tab-teacher").classList.remove("hidden");
+
+  const timer=setTimeout(()=>{ if(!S && screen==="welcome") $mode.textContent="La carga está tardando. Puedes comenzar igual."; },10000);
+  try{
+    const snap=await db.doc("sesiones/"+myId).get();
+    clearTimeout(timer);
+    if(snap.exists){ S=snap.data(); resumeScreen(); }
+  }catch(e){ clearTimeout(timer); }
+
+  if(isTeacher){
+    unsubTeacher=db.collection("sesiones").onSnapshot(qs=>{
+      teacherRows=qs.docs.map(d=>Object.assign({_id:d.id},d.data()));
+      if(view==="teacher") renderTeacher();
+    }, err=>{ $mode.textContent="No se pudo leer el curso: "+(err&&err.message||"error"); });
+  }
+  render();
+})();
+</script>
+</body>
+</html>
