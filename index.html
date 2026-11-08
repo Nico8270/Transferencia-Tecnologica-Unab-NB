@@ -143,6 +143,7 @@ th{font-weight:700;color:var(--ink);background:var(--paper)}
   <div class="bar-in">
     <div class="brand">Nivelatec<small>MVP de nivelación</small></div>
     <nav class="tabs" role="tablist" aria-label="Vistas">
+      <button class="tab hidden" id="new-student" title="Registrar a otro estudiante en este equipo">+ Nuevo estudiante</button>
       <button class="tab" role="tab" id="tab-student" aria-selected="true">Estudiante</button>
       <button class="tab hidden" role="tab" id="tab-teacher" aria-selected="false">Panel docente</button>
     </nav>
@@ -206,6 +207,8 @@ const BANK = [
 const DIAG_LEN = 12;            // 3 por tema
 const MASTERY = 75;             // % para considerar un tema nivelado
 const KEY_LOCAL = "nivelatec-mvp-v1";
+const KEY_CUR = "nivelatec-mvp-actual";
+let isOwnerFlag=false, ownerUid=null, confirmNew=0;
 
 /* ================= ESTADO Y PERSISTENCIA ================= */
 let db=null, user=null, sample=null, downloads=null;
@@ -281,8 +284,9 @@ function checkDiagRisk(){
 function render(){
   document.getElementById("tab-student").setAttribute("aria-selected", view==="student");
   document.getElementById("tab-teacher").setAttribute("aria-selected", view==="teacher");
+  document.getElementById("new-student").classList.toggle("hidden", !(view==="student" && S && canMultiStudent()));
   if(view==="teacher") return renderTeacher();
-  if(!S) return renderWelcome();
+  if(!S){ screen="welcome"; return renderWelcome(); }
   ({welcome:renderWelcome, diag:renderDiag, result:renderResult, practice:renderPractice, progress:renderProgress})[screen]();
   window.scrollTo({top:0});
 }
@@ -570,6 +574,43 @@ async function attend(id, btn){
   }
 }
 
+function canMultiStudent(){ return !cloud || isOwnerFlag; }
+
+async function newStudentSession(){
+  const b=document.getElementById("new-student");
+  if(!canMultiStudent()){ $mode.textContent="Solo el dueño del MVP puede registrar varios estudiantes en un mismo equipo."; return; }
+  if(Date.now()-confirmNew>4000){ confirmNew=Date.now(); b.textContent="¿Seguro? Toca otra vez"; setTimeout(()=>{ b.textContent="+ Nuevo estudiante"; },4000); return; }
+  confirmNew=0; b.textContent="+ Nuevo estudiante";
+  try{ await saving; }catch(e){}
+  const rand=Math.random().toString(36).slice(2,8);
+  if(cloud){ myId=ownerUid+"-"+rand; }
+  else { myId="local-"+rand; const all=loadLocalAll(); all.me=myId; saveLocalAll(all); }
+  try{ localStorage.setItem(KEY_CUR, myId); }catch(e){}
+  S=null; current=null; screen="welcome"; view="student";
+  $mode.textContent="Listo: el siguiente estudiante puede comenzar. Los anteriores quedaron guardados.";
+  render();
+}
+
+function showCsvText(data, btn){
+  let box=document.getElementById("csvBox");
+  if(!box){ box=document.createElement("div"); box.id="csvBox"; box.className="sheet"; btn.closest(".row").insertAdjacentElement("afterend", box); }
+  box.innerHTML=`<h3>Datos en formato CSV</h3><p class="note">Si la descarga no comenzó, copia este texto y pégalo en un archivo nuevo llamado nivelatec.csv, o directamente en Excel (Datos, Desde texto).</p><textarea id="csvText" readonly style="width:100%;height:160px;font-family:monospace;font-size:12px;border:1px solid var(--line);border-radius:4px;background:var(--paper);color:var(--text);padding:8px"></textarea><div class="row" style="margin-top:8px"><button class="btn ghost small" id="csvCopy">Copiar texto</button></div>`;
+  const ta=document.getElementById("csvText"); ta.value=data.replace(/^\ufeff/,"");
+  document.getElementById("csvCopy").onclick=async()=>{
+    ta.select();
+    try{ await navigator.clipboard.writeText(ta.value); $mode.textContent="CSV copiado."; }
+    catch(e){ try{ document.execCommand("copy"); $mode.textContent="CSV copiado."; }catch(e2){ $mode.textContent="Selecciona el texto y cópialo manualmente (Ctrl + C)."; } }
+  };
+}
+
+function browserDownload(data){
+  try{
+    const blob=new Blob([data],{type:"text/csv;charset=utf-8"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="nivelatec_resultados_mvp.csv";
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+  }catch(e){}
+}
+
 async function exportCSV(rows, btn){
   const head=["alias","carrera","diagnostico_completo","diag_algebra","diag_fracciones","diag_funciones","diag_lectura","actual_algebra","actual_fracciones","actual_funciones","actual_lectura","ejercicios","aciertos","pistas","ayuda_ia","minutos","alerta","motivo_alerta","alerta_atendida","ultima_actividad"];
   const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
@@ -579,11 +620,12 @@ async function exportCSV(rows, btn){
   }));
   const data="\ufeff"+lines.join("\n");
   if(downloads){
-    try{ await downloads.save({filename:"nivelatec_resultados_mvp.csv", data}); }
-    catch(e){ if(e&&e.code!=="declined") $mode.textContent="No se pudo descargar el archivo."; }
+    try{ await downloads.save({filename:"nivelatec_resultados_mvp.csv", data}); return; }
+    catch(e){ if(e&&e.code==="declined") return; }
   } else {
-    btn.disabled=true; btn.textContent="Descarga no disponible en esta vista";
+    browserDownload(data);
   }
+  showCsvText(data, btn);
 }
 
 function loadLocalTeacher(){
@@ -593,6 +635,7 @@ function loadLocalTeacher(){
 
 /* ================= ARRANQUE ================= */
 document.getElementById("tab-student").onclick=()=>{ view="student"; render(); };
+document.getElementById("new-student").onclick=newStudentSession;
 document.getElementById("tab-teacher").onclick=()=>{
   view="teacher";
   if(!cloud) loadLocalTeacher();
@@ -625,7 +668,10 @@ render();
   db=dbNs;
   try{
     myId=await user.id();
-    isTeacher = (await user.isOwner()) || (await user.canEdit());
+    isOwnerFlag = await user.isOwner();
+    isTeacher = isOwnerFlag || (await user.canEdit());
+    ownerUid = myId;
+    if(isOwnerFlag){ try{ const cur=localStorage.getItem(KEY_CUR); if(cur && cur.indexOf(myId)===0) myId=cur; }catch(e){} }
   }catch(e){ startLocal(); return; }
   if(!myId){ startLocal(); return; }
   cloud=true;
