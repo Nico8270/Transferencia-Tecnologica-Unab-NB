@@ -21,7 +21,7 @@ Integrantes: Nicolás Barrientos · Benjamín Araya · Sebastián Pinto · Sebas
 
 **En GitHub Pages (enlaces públicos para todo el grupo):**
 
-- Página para comparar: https://nico8270.github.io/Transferencia-Tecnologica-Unab-NB/mvps.html
+- [Presentación](https://benja2030.github.io/MVP-Transferencia-Tec/presentacion/)
 - [MVP A](https://benja2030.github.io/MVP-Transferencia-Tec/mvp-nico/)
 - [MVP B](https://benja2030.github.io/MVP-Transferencia-Tec/mvp-benja/)
 
