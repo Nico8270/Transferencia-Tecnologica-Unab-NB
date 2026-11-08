@@ -13,7 +13,7 @@ const OUT = process.argv[3] || "CINF113_s12_grupo01.docx";
 const LOGO = process.argv[4];
 const SIM = JSON.parse(fs.readFileSync(path.join(FIG, "resultados_simulacion.json"), "utf8"));
 const FIN = JSON.parse(fs.readFileSync(path.join(FIG, "finanzas.json"), "utf8"));
-const MVP_URL = "https://claude.ai/artifact/KQ1aF4QgipYaSNd2VMcLF1";
+const MVP_URL = "https://nico8270.github.io/Transferencia-Tecnologica-Unab-NB/entregable3/mvp/nivelatec_mvp.html";
 
 const FONT = "Calibri";
 const W = 9360; // ancho útil carta con márgenes de 1"

@@ -4,7 +4,7 @@ Código completo del tercer entregable (semana 12). Todo es reproducible con sem
 
 | Carpeta | Contenido |
 |---|---|
-| `mvp/nivelatec_mvp.html` | MVP funcional (HTML/CSS/JS sin dependencias). Ábrelo con doble clic en el navegador. Versión publicada: https://claude.ai/artifact/KQ1aF4QgipYaSNd2VMcLF1 |
+| `mvp/nivelatec_mvp.html` | MVP funcional (HTML/CSS/JS sin dependencias). Ábrelo con doble clic en el navegador. Versión publicada: https://nico8270.github.io/Transferencia-Tecnologica-Unab-NB/entregable3/mvp/nivelatec_mvp.html |
 | `pruebas/test_mvp.js` | Prueba técnica automatizada con Playwright (recorre el flujo y toma capturas). |
 | `pruebas/montaje_mvp.py` | Arma la Figura 4 a partir de las capturas. |
 | `simulacion/simulacion.py` | Simulación del piloto y de la prueba de tareas (**datos simulados**, no reales). Genera `figuras/resultados_simulacion.json`. |
