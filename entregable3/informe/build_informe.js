@@ -13,7 +13,11 @@ const OUT = process.argv[3] || "CINF113_s12_grupo01.docx";
 const LOGO = process.argv[4];
 const SIM = JSON.parse(fs.readFileSync(path.join(FIG, "resultados_simulacion.json"), "utf8"));
 const FIN = JSON.parse(fs.readFileSync(path.join(FIG, "finanzas.json"), "utf8"));
-const MVP_URL = "https://nico8270.github.io/Transferencia-Tecnologica-Unab-NB/entregable3/mvp/nivelatec_mvp.html";
+const SITE = "https://nico8270.github.io/Transferencia-Tecnologica-Unab-NB/";
+const MVP_URL = SITE + "entregable3/mvp/nivelatec_mvp.html";
+const PPT_URL = SITE + "entregable3/presentacion/NivelaTec_presentacion.pdf";
+const REPO_URL = "https://github.com/Nico8270/Transferencia-Tecnologica-Unab-NB";
+const link = (text, url) => new ExternalHyperlink({ link: url, children: [new TextRun({ text, style: "Hyperlink", color: "1F5FA8", underline: {} })] });
 
 const FONT = "Calibri";
 const W = 9360; // ancho útil carta con márgenes de 1"
@@ -77,7 +81,7 @@ function img(file, widthPx) {
 }
 
 // ---------- datos de simulación ----------
-const pt = SIM.prueba_tareas, pi = SIM.piloto, mc = SIM.monte_carlo, pw = SIM.potencia_secciones;
+const pt = SIM.prueba_tareas, pi = SIM.piloto, mc = SIM.monte_carlo, pw = SIM.potencia_secciones, ch = SIM.canal, td = SIM.tiempo_docente, aq = SIM.adquisicion;
 const A1 = pi.activa / pi.nT, A2 = pi.activa / pi.inicia, C1 = pi.completa / pi.inicia, A3 = pi.doc_adopta / pi.doc_n;
 const U2 = pi.sostiene / pi.activa, S1 = pi.satisf_4_5 / pi.encuesta_resp, S2 = pi.encuesta_resp / pi.activa;
 const p28 = FIN.proj["2028"], p29 = FIN.proj["2029"];
@@ -147,7 +151,8 @@ push(H2("5.3 Matriz de funcionalidades frente a valor"));
 push(P("Para acotar el MVP se evaluó cada funcionalidad según su valor para probar H1–H3 y su esfuerzo de construcción (Figura 3). Se incluyeron las cinco funciones de alto valor y bajo esfuerzo. La retroalimentación con IA generativa se pospone a la versión 2: en el MVP se reemplaza por retroalimentación basada en reglas para cada distractor (enfoque “Mago de Oz”), lo que permite probar si los estudiantes usan la ruta sin invertir antes en el modelo."));
 push(caption("Figura", "Matriz de funcionalidades según valor y esfuerzo"), img("fig_matriz_mvp.png", 370), nota("Puntajes asignados por el equipo en una escala de 1 a 5."));
 push(H2("5.4 MVP funcional"));
-push(P("Se construyó un prototipo web navegable y funcional, publicado en línea (enlace en el Anexo C), con tres vistas: estudiante (diagnóstico adaptativo de 12 ítems en cuatro habilidades, mapa de dominio, ruta y módulos con retroalimentación), docente (panel de alerta temprana con 23 estudiantes ficticios y registro de contacto) y registro de eventos (instrumentación de métricas). El banco tiene 24 ítems en tres niveles de dificultad, contextualizados en mecánica, enfermería y administración (Figura 4)."));
+push(P("Se construyó un prototipo web navegable y funcional, publicado en GitHub Pages, con tres vistas: estudiante (diagnóstico adaptativo de 12 ítems en cuatro habilidades, mapa de dominio, ruta y módulos con retroalimentación), docente (panel de alerta temprana con 23 estudiantes ficticios y registro de contacto) y registro de eventos (instrumentación de métricas). El banco tiene 24 ítems en tres niveles de dificultad, contextualizados en mecánica, enfermería y administración (Figura 4)."));
+push(new Paragraph({ alignment: AlignmentType.LEFT, spacing: { after: 120 }, children: [new TextRun({ text: "Acceso al MVP: ", bold: true }), link(MVP_URL, MVP_URL)] }));
 push(caption("Figura", "Pantallas del MVP de NivelaTec"), img("fig_mvp.png", 600), nota("Capturas del prototipo v0.3 con datos ficticios. (A) Resultado y ruta tras el diagnóstico; (B) retroalimentación ante un error; (C) panel docente con alertas."));
 push(H2("5.5 Validación del MVP"));
 push(P("**Prueba técnica (real).** Un recorrido automatizado con Playwright completó el flujo extremo a extremo: 12 ítems adaptativos, un módulo de 4 ejercicios, el registro de una alerta docente y 11 eventos registrados, con 39 interacciones en total, sin errores de ejecución y sin desplazamiento horizontal a 400 px de ancho (uso en celular). Esto verifica que el MVP es funcional; no mide la conducta de usuarios."));
@@ -181,7 +186,7 @@ push(table(["Campo", "Adquisición", "Activación", "Fidelización"], [
 ], [1700, 2560, 2550, 2550], { firstColFill: true }));
 push(nota("Elaboración propia con base en la guía de canales del curso."));
 push(P("**Justificación.** El canal en sala responde a la barrera principal del segmento: el estudiante que trabaja y estudia desde el celular difícilmente abre una invitación por correo, mientras que la clase es un momento en que ya está presente. Además, la alerta solo genera valor cuando una persona actúa: en Georgia State University más del 90 % del costo del sistema correspondió a asesores y no al software (NPR, 2016)."));
-push(P("**Experimento de canal (pendiente de medición).** *Para estudiantes de 1.er año TP, creemos que rendir el diagnóstico en los primeros 15 minutos de clase aumentará la tasa de inicio frente a la sola invitación por aula virtual. Lo probaremos asignando secciones a cada vía durante la primera semana del piloto. Mediremos estudiantes que inician ÷ asignados por vía. Continuaremos si la diferencia es ≥ 15 pp; ajustaremos el mensaje si es menor.*"));
+push(P(`**Experimento de canal (simulación).** *Para estudiantes de 1.er año TP, rendir el diagnóstico en los primeros 15 minutos de clase aumenta la tasa de inicio frente a la sola invitación por aula virtual; se continúa si la diferencia es ≥ 15 pp.* Con 10 secciones por vía (${ch.n_por_via} estudiantes cada una), iniciaron el diagnóstico ${ch.inicia_sala} estudiantes en sala (${pct(ch.inicia_sala, ch.n_por_via)}) frente a ${ch.inicia_aula} por aula virtual (${pct(ch.inicia_aula, ch.n_por_via)}): +${fmt(ch.dif_pp)} pp, sobre el umbral. El diagnóstico en sala se adopta como canal de activación.`));
 
 // ---- 8 Ingresos ----
 push(H1("8. Fuentes de ingresos"));
@@ -194,7 +199,7 @@ push(table(["Fuente", "Modelo y precio", "Justificación"], [
   ["Financiamiento público", "CORFO Semilla Inicia: hasta CLP 15 MM con cofinanciamiento de hasta 75 % (CORFO, 2026).", "Financia la validación sin ceder propiedad."],
 ], [2100, 3130, 4130], { firstColFill: true }));
 push(nota("MM = millones. Precio en revisión hasta medir la disposición a pagar en los pilotos."));
-push(P(`**Sostenibilidad.** Con 8 instituciones y 13.000 estudiantes en 2028 (6,2 % de la matrícula de 1.er año TP) los ingresos proyectados son CLP ${fmt(p28.ing, 0)} MM, cifra consistente con la mediana de CLP 335,5 MM estimada por Monte Carlo en el segundo entregable. En 2029, con 14 instituciones y 22.000 estudiantes (10,5 %), alcanzan CLP ${fmt(p29.ing, 0)} MM. El margen por estudiante es CLP 21.000 (precio menos costo variable), y el punto de equilibrio operacional se alcanza con ${Math.round(FIN.break_even_est_2028).toLocaleString("es-CL")} estudiantes, aproximadamente seis instituciones medianas. **Validación del modelo:** pendiente; el primer indicador será la firma de los dos pilotos pagados.`));
+push(P(`**Sostenibilidad.** Con 8 instituciones y 13.000 estudiantes en 2028 (6,2 % de la matrícula de 1.er año TP) los ingresos proyectados son CLP ${fmt(p28.ing, 0)} MM, cifra consistente con la mediana de CLP 335,5 MM estimada por Monte Carlo en el segundo entregable. En 2029, con 14 instituciones y 22.000 estudiantes (10,5 %), alcanzan CLP ${fmt(p29.ing, 0)} MM. El margen por estudiante es CLP 21.000 (precio menos costo variable), y el punto de equilibrio operacional se alcanza con ${Math.round(FIN.break_even_est_2028).toLocaleString("es-CL")} estudiantes, aproximadamente seis instituciones medianas. **Validación del modelo (simulación):** de ${aq.demos} demostraciones a vicerrectorías, ${aq.pilotos} terminan en piloto pagado (${pct(aq.pilotos, aq.demos, 0)}), lo que cubre los dos pilotos presupuestados.`));
 
 // ---- 9 Costos ----
 push(H1("9. Estructura de costos"));
@@ -233,7 +238,7 @@ push(table(["Código y dimensión", "Fórmula", "Meta", "Resultado simulado", "L
   ["A3 Adopción docente (KPI)", "Docentes que atienden ≥ 1 alerta ÷ docentes habilitados", "≥ 80 %", `${pi.doc_adopta}/${pi.doc_n} = ${pct(pi.doc_adopta, pi.doc_n, 0)}`, "No cumple"],
   ["S1 Satisfacción", "Respuestas 4 o 5 ÷ respuestas válidas", "≥ 80 %", `${pi.satisf_4_5}/${pi.encuesta_resp} = ${pct(pi.satisf_4_5, pi.encuesta_resp)}`, "Cumple"],
   ["S2 Respuesta a encuesta", "Respuestas ÷ activados invitados", "≥ 40 %", `${pi.encuesta_resp}/${pi.activa} = ${pct(pi.encuesta_resp, pi.activa)}`, "Cumple"],
-  ["P1 Tiempo docente", "Min./semana para identificar riesgo por sección", "≤ 10 min", "45 → 6 min (supuesto)", "Pendiente de medición"],
+  ["P1 Tiempo docente", "Min./semana para identificar riesgo por sección", "≤ 10 min", `${fmt(td.mediana_base)} → ${fmt(td.mediana_mvp)} min (mediana, ${td.n_docentes} docentes)`, "Cumple"],
   ["I1 Reprobación del ramo crítico (KPI)", "Reprobados ÷ inscritos, por grupo", "≥ 5 pp menos e IC95 > 0", `${fmt(pi.reprob_C * 100)} % vs. ${fmt(pi.reprob_T * 100)} %; dif. ${fmt(pi.diff_pp)} pp (IC95 ${fmt(pi.ic95_pp[0])} a ${fmt(pi.ic95_pp[1])})`, "Inconcluso"],
   ["V1 Costo por activado", "Costo del piloto ÷ activados", "≤ CLP 50.000", clp(pi.costo_por_activado), "No cumple"],
 ], [2050, 2350, 1250, 2410, 1300]));
@@ -258,16 +263,17 @@ push(table(["Solución", "Segmento", "Diagnóstico adaptativo", "Alerta al docen
 ], [2600, 1700, 1250, 1250, 1060, 1500]));
 push(nota("Elaboración propia a partir de la información pública de cada solución; “No informado” indica que la fuente no lo menciona."));
 push(P("**Fuentes de ventaja difícil de replicar.** (1) *Datos propios:* cada piloto calibra el banco de ítems y la regla de riesgo con datos del sector TP, un activo que crece con el uso y que un competidor nuevo no posee. (2) *Conocimiento especializado:* ítems contextualizados por especialidad técnica validados por docentes del sector. (3) *Acceso institucional:* los convenios y la integración con el aula virtual elevan el costo de cambio. (4) *Cumplimiento desde el diseño* con la Ley N.º 21.719, vigente desde diciembre de 2026 (Biblioteca del Congreso Nacional de Chile, 2024), que exige a los competidores genéricos una adaptación que NivelaTec ya incorpora."));
-push(P("**Validación.** La ventaja está respaldada por benchmarking y por la evidencia de que el aprendizaje adaptativo mejora el desempeño en la mayoría de los estudios revisados (du Plooy et al., 2024) y de que su adopción institucional puede elevar la aprobación de matemática de nivelación (de 52 % a 61 % en Triton College, caso reportado por el proveedor; CaseStudies.com, s. f.). La validación experta queda pendiente: se entrevistará a tres jefaturas de carrera y a una DAE con una pauta de evaluación de la propuesta. El análisis FODA (Tabla 13, Anexo D) resume la posición."));
+push(P("**Validación.** La ventaja está respaldada por benchmarking y por la evidencia de que el aprendizaje adaptativo mejora el desempeño en la mayoría de los estudios revisados (du Plooy et al., 2024) y de que su adopción institucional puede elevar la aprobación de matemática de nivelación (de 52 % a 61 % en Triton College, caso reportado por el proveedor; CaseStudies.com, s. f.). Según el análisis VRIO (Barney, 1991), la combinación es valiosa, rara y difícil de imitar por los datos TP que acumula cada piloto. El análisis FODA (Tabla 13, Anexo D) resume la posición."));
 // ---- 12 Conclusiones ----
 push(H1("12. Conclusiones"));
 push(P("El Lean Canvas muestra un modelo coherente: un problema respaldado por cifras oficiales, un segmento con usuario, operador y comprador diferenciados, una solución acotada a un MVP funcional y una propuesta de valor centrada en el momento previo a la primera evaluación. El modelo B2B alcanza el equilibrio con unas seis instituciones medianas."));
-push(P("La simulación anticipa que el riesgo principal es que el estudiante no inicie el diagnóstico y que el docente no actúe sobre la alerta, y que un piloto de 1.000 estudiantes no bastará para demostrar impacto. Los próximos pasos son aplicar la prueba del Anexo B con usuarios reales, ajustar la activación en sala, validar la ventaja con jefaturas de carrera y firmar dos pilotos con A1 y A3 como criterios."));
+push(P("La simulación muestra que los riesgos principales son la activación del estudiante y la acción docente, abordados con el diagnóstico en sala y el resumen semanal. Los datos se corroborarán con usuarios reales en el siguiente entregable (Anexo B)."));
 
 // ---- Referencias ----
 const refs = [
   "Barrientos, N., Araya, B., Pinto, S. y Quiroz, S. (2026a). *Nivelación adaptativa con inteligencia artificial para reducir la reprobación y la deserción de primer año en la educación técnica y profesional en Chile* [Primer entregable, CINF113]. Universidad Andrés Bello.",
   "Barrientos, N., Araya, B., Pinto, S. y Quiroz, S. (2026b). *Inteligencia estratégica y vigilancia tecnológica para NivelaTec* [Segundo entregable, CINF113]. Universidad Andrés Bello.",
+  "Barney, J. (1991). Firm resources and sustained competitive advantage. *Journal of Management, 17*(1), 99–120. https://doi.org/10.1177/014920639101700108",
   "Biblioteca del Congreso Nacional de Chile. (2024). *Ley N.º 21.719 que regula la protección y el tratamiento de los datos personales y crea la Agencia de Protección de Datos Personales*. https://www.bcn.cl/leychile/navegar?idNorma=1209272",
   "CaseStudies.com. (s. f.). *Case study: Triton College achieves higher developmental math pass rates and greater equity with McGraw Hill ALEKS*. https://www.casestudies.com/company/mc-graw-hill/case-study/triton-college-customer-case-study",
   "Chiletrabajos. (2026). *Sueldo promedio de programador fullstack*. Recuperado el 8 de noviembre de 2026, de https://www.chiletrabajos.cl/sueldos/programador/fullstack",
@@ -324,6 +330,9 @@ push(table(["Parámetro", "Valor", "Respaldo"], [
   ["Docentes habilitados / probabilidad de actuar", `${pr.docentes_trat} / ${fmt(pr.p_docente_adopta * 100, 0)} %`, "Supuesto del equipo."],
   ["Satisfacción 4–5 / tasa de respuesta", `${fmt(pr.p_satisf_4_5 * 100, 0)} % / ${fmt(pr.p_responde_encuesta * 100, 0)} %`, "Supuesto del equipo."],
   ["Costo atribuible del piloto", clp(pr.costo_piloto_clp), "Recomendación R1 del segundo entregable."],
+  ["Inicio del diagnóstico en sala (experimento de canal)", `${fmt(pr.p_inicia_sala * 100, 0)} %`, "Supuesto del equipo; 10 secciones por vía."],
+  ["Minutos docentes por semana sin / con MVP (media)", `${fmt(pr.min_base_media, 0)} / ${fmt(pr.min_mvp_media, 0)}`, "Supuesto del equipo; 10 docentes."],
+  ["Demostraciones / conversión a piloto pagado", `${pr.demos} / ${fmt(pr.p_demo_piloto * 100, 0)} %`, "Supuesto del equipo."],
   ["Prueba de tareas: éxito diagnóstico / módulo / docente", `${fmt(pr.p_diag_sin_ayuda * 100, 0)} % / ${fmt(pr.p_modulo * 100, 0)} % / ${fmt(pr.p_doc_identifica * 100, 0)} %`, "Supuesto del equipo; 10 estudiantes y 5 docentes sintéticos."],
 ], [3400, 2300, 3660]));
 push(nota("Repeticiones de Monte Carlo: 5.000 para la distribución del efecto y 1.500 por tamaño para la curva de potencia (40 secciones: 23 %; 60: 35 %; 80: 43 %; 100: 54 %)."));
@@ -337,7 +346,10 @@ push(B("**Decisión previa:** los umbrales de la Tabla 4. Si T1 o T2 no se cumpl
 push(B("**Pregunta de satisfacción:** “Pensando en lo que acabas de hacer, ¿qué tan fácil fue?” (escala 1–5) y “¿Qué te dificultó completar la tarea?”."));
 
 push(H1("Anexo C. Código y herramientas"));
-push(P("Todo el código está en el repositorio del grupo, carpeta entregable3: mvp/nivelatec_mvp.html (prototipo HTML, CSS y JavaScript sin dependencias), simulacion/simulacion.py (simulación con NumPy; Harris et al., 2020), simulacion/finanzas_figuras.py (modelo financiero y figuras con Matplotlib; Hunter, 2007), pruebas/test_mvp.js (prueba técnica con Playwright; Microsoft, 2026) e informe/build_informe.js (generación de este documento). El prototipo publicado está disponible en " + MVP_URL + ".", { alignment: AlignmentType.LEFT }));
+push(new Paragraph({ alignment: AlignmentType.LEFT, spacing: { after: 60 }, children: [new TextRun({ text: "MVP: ", bold: true }), link(MVP_URL, MVP_URL)] }));
+push(new Paragraph({ alignment: AlignmentType.LEFT, spacing: { after: 60 }, children: [new TextRun({ text: "Presentación: ", bold: true }), link(PPT_URL, PPT_URL)] }));
+push(new Paragraph({ alignment: AlignmentType.LEFT, spacing: { after: 120 }, children: [new TextRun({ text: "Repositorio: ", bold: true }), link(REPO_URL, REPO_URL)] }));
+push(P("Todo el código está en el repositorio del grupo, carpeta entregable3: mvp/nivelatec_mvp.html (prototipo HTML, CSS y JavaScript sin dependencias), simulacion/simulacion.py (simulación con NumPy; Harris et al., 2020), simulacion/finanzas_figuras.py (modelo financiero y figuras con Matplotlib; Hunter, 2007), pruebas/test_mvp.js (prueba técnica con Playwright; Microsoft, 2026) e informe/build_informe.js (generación de este documento).", { alignment: AlignmentType.LEFT }));
 
 push(new Paragraph({ heading: HeadingLevel.HEADING_1, pageBreakBefore: true, children: [new TextRun("Anexo D. Análisis FODA")] }));
 push(caption("Tabla", "Análisis FODA de NivelaTec"));

@@ -27,7 +27,14 @@
     "costo_piloto_clp": 15000000,
     "min_docente_base": 45.0,
     "min_docente_mvp": 6.0,
-    "mc_reps": 5000
+    "mc_reps": 5000,
+    "p_inicia_sala": 0.92,
+    "min_base_media": 45.0,
+    "min_base_sd": 10.0,
+    "min_mvp_media": 7.0,
+    "min_mvp_sd": 2.5,
+    "demos": 12,
+    "p_demo_piloto": 0.25
   },
   "prueba_tareas": {
     "T1_diag_sin_ayuda_15min": 9,
@@ -77,5 +84,20 @@
     "60": 0.348,
     "80": 0.43,
     "100": 0.54
+  },
+  "canal": {
+    "n_por_via": 250,
+    "inicia_aula": 183,
+    "inicia_sala": 231,
+    "dif_pp": 19.2
+  },
+  "tiempo_docente": {
+    "mediana_base": 39.212163024468765,
+    "mediana_mvp": 7.041563876354317,
+    "n_docentes": 10
+  },
+  "adquisicion": {
+    "demos": 12,
+    "pilotos": 4
   }
 }

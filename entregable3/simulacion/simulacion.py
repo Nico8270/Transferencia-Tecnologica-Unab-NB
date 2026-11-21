@@ -36,6 +36,12 @@ PARAMS = {
     "costo_piloto_clp": 15_000_000,
     "min_docente_base": 45.0, "min_docente_mvp": 6.0,  # minutos/semana para identificar riesgo por sección
     "mc_reps": 5000,
+    # Experimento de canal (grupo tratamiento, 20 secciones: 10 en sala, 10 solo aula virtual)
+    "p_inicia_sala": 0.92,         # diagnóstico rendido en los primeros 15 min de clase
+    # Tiempo docente (P1), 10 docentes, minutos/semana por sección para identificar riesgo
+    "min_base_media": 45.0, "min_base_sd": 10.0, "min_mvp_media": 7.0, "min_mvp_sd": 2.5,
+    # Adquisición: demostraciones a vicerrectorías y conversión a piloto pagado
+    "demos": 12, "p_demo_piloto": 0.25,
 }
 P = PARAMS
 
@@ -125,6 +131,27 @@ def potencia_por_tamano(r, sizes=(40, 60, 80, 100), reps=1500):
     return out
 
 
+def experimento_canal(r):
+    """Inicio del diagnóstico por vía de activación (10 secciones por vía, 25 estudiantes c/u)."""
+    n = 10 * P["est_por_seccion"]
+    ent_a = r.random(n) < P["p_invitacion_entregada"]
+    aula = int((ent_a & (r.random(n) < P["p_inicia_diag"])).sum())
+    sala = int((r.random(n) < P["p_inicia_sala"]).sum())  # en sala no depende de la entrega del correo
+    return {"n_por_via": n, "inicia_aula": aula, "inicia_sala": sala,
+            "dif_pp": (sala - aula) / n * 100}
+
+
+def tiempo_docente(r):
+    base = np.clip(r.normal(P["min_base_media"], P["min_base_sd"], 10), 15, 90)
+    mvp = np.clip(r.normal(P["min_mvp_media"], P["min_mvp_sd"], 10), 2, 20)
+    return {"mediana_base": float(np.median(base)), "mediana_mvp": float(np.median(mvp)), "n_docentes": 10}
+
+
+def adquisicion(r):
+    pil = int((r.random(P["demos"]) < P["p_demo_piloto"]).sum())
+    return {"demos": P["demos"], "pilotos": pil}
+
+
 if __name__ == "__main__":
     pt = prueba_tareas(rng)
     pi = piloto(rng)
@@ -132,6 +159,8 @@ if __name__ == "__main__":
     pw = potencia_por_tamano(np.random.default_rng(SEED + 2))
     pi["costo_por_activado"] = P["costo_piloto_clp"] / pi["activa"]
     pi["horas_docente_liberadas_sem"] = (P["min_docente_base"] - P["min_docente_mvp"]) * (P["secciones"] // 2) / 60
-    res = {"params": P, "prueba_tareas": pt, "piloto": pi, "monte_carlo": mc, "potencia_secciones": pw}
+    extra = np.random.default_rng(SEED + 3)
+    res = {"params": P, "prueba_tareas": pt, "piloto": pi, "monte_carlo": mc, "potencia_secciones": pw,
+           "canal": experimento_canal(extra), "tiempo_docente": tiempo_docente(extra), "adquisicion": adquisicion(extra)}
     json.dump(res, open(OUT / "resultados_simulacion.json", "w"), indent=2, ensure_ascii=False)
     print(json.dumps({k: v for k, v in res.items() if k != "params"}, indent=2, ensure_ascii=False))
